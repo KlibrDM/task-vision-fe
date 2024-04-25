@@ -1,0 +1,37 @@
+<div class="container">
+  <div class="top-button-group">
+    <ion-button
+      *ngIf="showOpenButton"
+      fill="clear"
+      class="show-logs-button"
+      (click)="toggleIsOpen()"
+    >
+      {{ isOpen ? ('HIDE_LOGS' | translate) : ('SHOW_LOGS' | translate) }}
+    </ion-button>
+    <ion-button
+      *ngIf="isOpen"
+      fill="clear"
+      class="refresh-logs-button"
+      (click)="refreshLogs()"
+    >
+      <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="list" *ngIf="isOpen">
+    <app-logs-list
+      [logs]="logs"
+      [projectUsers]="projectUsers"
+      [idList]="idList"
+      [isProjectLogs]="isProjectLogs"
+    ></app-logs-list>
+    <app-pagination
+      [count]="logsCount"
+      [limit]="limit"
+      [offset]="offset"
+      [currentPage]="currentPage"
+      (pageChange)="onPageChange($event)"
+      (limitChange)="onLimitChange($event)"
+    ></app-pagination>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'LOGS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="profile">
+      <div class="content" *ngIf="project && user && projectUsers && items && sprints">
+        <!-- Header -->
+        <div class="project-settings-header">
+          <app-general-header
+            name="{{ 'X_NAME_LOGS' | translate: { name: project.name } }}"
+          ></app-general-header>
+        </div>
+
+        <!-- LOGS -->
+        <div class="log-card">
+          <div class="filters">
+            <div
+              *ngFor="let entity of filterEntities"
+              class="filter"
+            >
+              <ion-checkbox
+                labelPlacement="end"
+                [checked]="activeEntities.includes(entity)"
+                (ionChange)="toggleFilterEntity(entity)"
+              >
+                {{ entity | translate }}
+              </ion-checkbox>
+            </div>
+          </div>
+          <app-logs-controller
+            [isOpen]="true"
+            [showOpenButton]="false"
+            [user]="user"
+            [project]="project"
+            [projectUsers]="projectUsers"
+            [idList]="generateIdList()"
+            [isProjectLogs]="true"
+            [projectLogsEntities]="activeEntities"
+            [forceRefreshLogs]="forceRefreshLogs"
+            [limit]="20"
+          ></app-logs-controller>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

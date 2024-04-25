@@ -1,0 +1,61 @@
+:root {
+  --main-bg-color: #f4f5f8;
+  --main-bg-gradient: linear-gradient(180deg, #dde7ec 0%, #f1f1f8 30%, #eee5fd 100%, #d7c6ec 100%, #7a7b7c 100%);
+
+  --item-full-bg-color: #fff;
+  --item-bg-color: #ffffff;
+  --item-card-color: #fcfcfc;
+  --item-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.2);
+  --item-complexity-bg-color: #e6e8ee;
+  --item-estimate-bg-color: #d1edff;
+  --item-estimate-danger-bg-color: #ffd1d1;
+  --item-border-color: rgba(0, 0, 0, 0.13);
+
+  --day-workday-bg-color: #ffffff;
+  --day-weekend-bg-color: #ff9a9a;
+  --day-today-bg-color: #4bb5fc;
+  --day-border-color: #d1d1d1;
+  --day-weekend-border-color: #757575;
+  --day-divider-color: #d1d1d1;
+
+  --markdown-accent-color: #f3f3f3;
+  --markdown-accent-color-darker: #e4e4e4;
+  --markdown-hint-color: #727272;
+  --markdown-divider-color: #acacac;
+
+  --chart-element-selected-color: #f3f3f3;
+  --chart-element-selected-text-color: #000000;
+  --chart-element-text-color: #363636;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --main-bg-color: #272727;
+    --main-bg-gradient: linear-gradient(180deg, #393c3d 0%, #29292c 30%, #312f33 100%, #2d2b30 100%, #282929 100%);
+  
+    --item-full-bg-color: #010409;
+    --item-bg-color: #010409;
+    --item-card-color: #0e1014;
+    --item-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.2);
+    --item-complexity-bg-color: #383838;
+    --item-estimate-bg-color: #084368;
+    --item-estimate-danger-bg-color: #5c2626;
+    --item-border-color: rgba(0, 0, 0, 0.13);
+
+    --day-workday-bg-color: #000000;
+    --day-weekend-bg-color: #492d2d;
+    --day-today-bg-color: #29648b;
+    --day-border-color: #2c2c2c;
+    --day-weekend-border-color: #424242;
+    --day-divider-color: #6d6d6d;
+
+    --markdown-accent-color: #181818;
+    --markdown-accent-color-darker: #2e2e2e;
+    --markdown-hint-color: #d1d1d1;
+    --markdown-divider-color: #cfcfcf;
+
+    --chart-element-selected-color: #242424;
+    --chart-element-selected-text-color: #ffffff;
+    --chart-element-text-color: #d3d3d3;
+  }
+}

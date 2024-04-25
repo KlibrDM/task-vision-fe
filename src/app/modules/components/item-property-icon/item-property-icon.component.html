@@ -1,0 +1,18 @@
+<ion-icon
+  class="icon"
+  [name]="icon"
+  [color]="!inverse ? color : ''"
+  [style]="'background-color: ' + background + '; font-size: ' + size + 'rem;'"
+  [class.inverse-primary]="inverse && color === 'primary'"
+  [class.inverse-secondary]="inverse && color === 'secondary'"
+  [class.inverse-tertiary]="inverse && color === 'tertiary'"
+  [class.inverse-success]="inverse && color === 'success'"
+  [class.inverse-warning]="inverse && color === 'warning'"
+  [class.inverse-danger]="inverse && color === 'danger'"
+  [class.inverse-dark]="inverse && color === 'dark'"
+  [class.inverse-medium]="inverse && color === 'medium'"
+  [class.inverse-light]="inverse && color === 'light'"
+  matTooltip="{{ property! | translate }}"
+  matTooltipShowDelay="500"
+>
+</ion-icon>

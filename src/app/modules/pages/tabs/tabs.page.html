@@ -1,0 +1,26 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    <img src="assets/images/logo.png" alt="logo" class="logo" />
+
+    <ion-tab-button tab="board" href="/app/board">
+      <ion-icon aria-hidden="true" name="checkbox-outline"></ion-icon>
+      <ion-label>{{ 'BOARD' | translate }}</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="backlog" href="/app/backlog">
+      <ion-icon aria-hidden="true" name="list-outline"></ion-icon>
+      <ion-label>{{ 'BACKLOG' | translate }}</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="docs" href="/app/docs">
+      <ion-icon aria-hidden="true" name="document-text-outline"></ion-icon>
+      <ion-label class="large">{{ 'DOCS' | translate }}</ion-label>
+      <ion-label class="small">{{ 'DOCUMENTS' | translate }}</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="more" href="/app/more">
+      <ion-icon aria-hidden="true" name="apps-outline"></ion-icon>
+      <ion-label>{{ 'MORE' | translate }}</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>

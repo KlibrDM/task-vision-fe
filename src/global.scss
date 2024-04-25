@@ -1,0 +1,116 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+@use '/src/theme/custom';
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+
+ion-content {
+  --background: none;
+}
+
+body {
+  background-color: var(--main-bg-color);
+  background: var(--main-bg-gradient);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+.alert-text-pre {
+  white-space: pre;
+}
+
+.markdown-text {
+  width: 100%;
+  max-width: 100%;
+
+  code {
+    background-color: var(--markdown-accent-color);
+    padding: 0px 4px;
+    border-radius: 4px;
+  }
+
+  pre {
+    width: fit-content;
+    max-width: 100%;
+    overflow: auto;
+    background-color: var(--markdown-accent-color);
+    padding: 4px 8px;
+    border-radius: 8px;
+
+    code {
+      padding: 0px;
+    }
+  }
+
+  table {
+    display: block;
+    overflow: auto;
+  }
+
+  thead {
+    border-bottom: 1px solid var(--markdown-accent-color-darker);
+  }
+
+  td, th {
+    padding: 4px 8px;
+  }
+
+  th {
+    background-color: var(--markdown-accent-color);
+  }
+
+  tr:nth-child(even) {
+    background-color: var(--markdown-accent-color);
+  }
+
+  blockquote {
+    border-left: 4px solid var(--markdown-accent-color-darker);
+    padding: 4px 8px;
+    margin: 8px 0px;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--markdown-accent-color-darker);
+    margin: 16px 0px;
+  }
+}

@@ -1,0 +1,16 @@
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sprint-select,
+.measure-select,
+.weekend-checkbox {
+  display: flex;
+}
+
+#canvas {
+  max-height: 500px;
+}

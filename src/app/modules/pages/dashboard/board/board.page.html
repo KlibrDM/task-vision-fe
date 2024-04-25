@@ -1,0 +1,150 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'BOARD' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="board">
+      <div class="content">
+        <!-- Board Header -->
+        <div class="board-header" *ngIf="project">
+          <app-board-header
+            parent="board"
+            [projectName]="project.name"
+            (onlyMineClick)="onShowOnlyMineToggle($event)"
+            (filtersClick)="onFiltersClick()"
+            (createItemClick)="onCreateItemClick()"
+          >
+          </app-board-header>
+        </div>
+
+        <!-- Board Content -->
+        <div class="board-container" cdkDropListGroup *ngIf="project?.currentSprintId">
+          <div class="user" *ngFor="let user of boardView, let userIndex = index">
+            <div class="user-header">
+              <div class="user-header-name">
+                <p>{{user.first_name + ' ' + user.last_name}}</p>
+              </div>
+              <div class="user-header-toggle">
+                <ion-button
+                  class="user-header-toggle-button"
+                  color="light"
+                  shape="round"
+                  size="small"
+                  (click)="onUserExpandToggle(userIndex)"
+                >
+                  <ion-icon
+                    slot="icon-only"
+                    name="{{user.expanded ? 'chevron-up-outline' : 'chevron-down-outline' }}">
+                  </ion-icon>
+                </ion-button>
+              </div>
+              <div class="user-header-items-count">
+                <p>{{ 'X_ITEMS' | translate: { count: user.itemsCount } }}</p>
+              </div>
+            </div>
+            <div *ngIf="user.expanded" class="columns">
+              <div
+                *ngFor="let column of user.columns, let i = index"
+                class="column"
+                cdkDropList
+                cdkDropListSortingDisabled
+                (cdkDropListDropped)="onItemDrop($event)"
+                id="{{user._id + '_' +column.name}}"
+              >
+                <div class="column-header">
+                  <p>{{column.name}}</p>
+                </div>
+                <div class="items">
+                  <ion-card
+                    *ngFor="let item of column.items"
+                    cdkDrag
+                    [cdkDragDisabled]="isMobile"
+                    id="{{item._id}}"
+                    class="item-card"
+                    (click)="onItemDetailsClick(item)"
+                  >
+                    <ion-card-header>
+                      <ion-card-title class="item-code">
+                        {{item.code}}
+                      </ion-card-title>
+                      <ion-card-title class="item-title">
+                        {{item.name}}
+                      </ion-card-title>
+                    </ion-card-header>
+                    <ion-card-content>
+                      <p *ngIf="item.epicName" class="item-epic">{{item.epicName}}</p>
+                      <div class="item-card-footer-row">
+                        <div class="item-card-footer-left-side">
+                          <div class="item-priority">
+                            <app-item-property-icon [property]="item.priority" [inverse]="true" [size]="1.1"></app-item-property-icon>
+                          </div>
+                          <div class="item-type">
+                            <app-item-property-icon [property]="item.type" [inverse]="true" [size]="1.1"></app-item-property-icon>
+                          </div>
+                        </div>
+                        <div class="item-card-footer-right-side">
+                          <app-item-estimate-badge
+                            *ngIf="item.complexity !== undefined"
+                            [estimate]="item.complexity"
+                            [type]="'complexity'">
+                          </app-item-estimate-badge>
+                          <app-item-estimate-badge
+                            *ngIf="item.hours_left !== undefined"
+                            [estimate]="item.hours_left"
+                            [type]="'estimate'">
+                          </app-item-estimate-badge>
+                        </div>
+                      </div>
+                    </ion-card-content>
+                    <div *cdkDragPlaceholder class="drag-placeholder"></div>
+                  </ion-card>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="board-empty" *ngIf="!project?.currentSprintId">
+          <h2>{{ 'NO_ACTIVE_SPRINT' | translate }}</h2>
+          <a [routerLink]="['/app/backlog']">
+            {{ 'GO_TO_BACKLOG' | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Item Create Modal -->
+  <app-item-create-modal
+    [isOpen]="isCreateModalOpen"
+    [user]="user"
+    [items]="items"
+    [project]="project"
+    [assignees]="projectUsers ?? []"
+    [epics]="epics ?? []"
+    [sprints]="sprints ?? []"
+    (closeModal)="onCreateModalClose()"
+    (confirmModal)="onCreateModalConfirm($event)">
+  </app-item-create-modal>
+
+  <!-- Item Details Modal -->
+  <app-item-details-modal
+    [isOpen]="isDetailsModalOpen"
+    [item]="selectedItem"
+    [items]="items"
+    [user]="user"
+    [project]="project"
+    [assignees]="projectUsers ?? []"
+    [epics]="epics ?? []"
+    [sprints]="sprints ?? []"
+    (closeModal)="onDetailsModalClose()"
+    (itemChanged)="onItemChanged($event)">
+  </app-item-details-modal>
+</ion-content>

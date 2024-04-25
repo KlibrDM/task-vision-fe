@@ -1,0 +1,195 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'SPRINT_PLANNER' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="sprint-planner">
+      <div class="content">
+        <!-- Sprint Planner Header -->
+        <div class="sprint-planner-header" *ngIf="project">
+          <app-management-header
+            parent="sprint-planner"
+            [projectName]="project.name"
+            [addItemText]="'CREATE_SPRINT' | translate"
+            (addItemClick)="onCreateSprintClick()"
+          >
+          </app-management-header>
+        </div>
+
+        <!-- Sprint Planner Content -->
+        <div class="sprint-planner-container">
+          <div class="sprint-planner-warning" *ngIf="!project?.settings?.use_sprints">
+            <div class="sprint-planner-warning-title">
+              <ion-icon name="warning-outline" color="warning"></ion-icon>
+              <h2>{{ 'CONTINOUS_DEVELOPMENT_WARNING_TITLE' | translate }}</h2>
+            </div>
+            <p>{{ 'CONTINOUS_DEVELOPMENT_WARNING_CONTENT' | translate }}</p>
+          </div>
+          <div
+            *ngFor="let sprint of sprintView, let i = index"
+            class="sprint"
+            [class.active]="sprint.id === project?.currentSprintId"
+          >
+            <div class="date-section">
+              <div class="date">{{sprint.formattedStartDate}}</div>
+              <div class="date-divider"></div>
+              <div class="name">
+                {{sprint.name}}
+                <br *ngIf="sprint.id === project?.currentSprintId"/>
+                {{sprint.id === project?.currentSprintId ? ('ACTIVE' | translate) : ''}}
+              </div>
+              <div class="date-divider"></div>
+              <div class="date">{{sprint.formattedEndDate}}</div>
+            </div>
+
+            <div class="day-view">
+              <div
+                *ngFor="let day of sprint.daysArray"
+                class="day"
+                [class.today]="day.isToday"
+                [class.weekend]="day.isWeekend"
+              >
+                {{day.formattedDate}}
+              </div>
+            </div>
+
+            <div class="sprint-details">
+              <ion-item>
+                <ion-input
+                  label="{{ 'NAME' | translate }}"
+                  labelPlacement="floating"
+                  type="text"
+                  placeholder="{{ 'NAME' | translate }}"
+                  required
+                  maxlength="120"
+                  [(ngModel)]="sprint.formName"
+                  (ngModelChange)="onFormChangesMade(sprint.id)"
+                ></ion-input>
+              </ion-item>
+
+              <div class="sprint-items-totals">
+                <div class="sprint-items-complete" *ngIf="sprint.isCompleted">
+                  {{ 'SPRINT_COMPLETED' | translate | uppercase }}
+                </div>
+                <div class="sprint-items-count">
+                  {{ 'X_ITEMS' | translate: {count: sprint.totalItems} }}
+                </div>
+                <div class="sprint-items-divider"></div>
+                <div class="sprint-items-complexity">
+                  {{ 'COMPLEXITY_X' | translate: {complexity: sprint.totalComplexity} }}
+                </div>
+                <div class="sprint-items-divider"></div>
+                <div class="sprint-items-estimate">
+                  {{ 'ESTIMATE_X_HOURS' | translate: {hours: sprint.totalEstimate} }}
+                </div>
+                <div class="sprint-items-divider"></div>
+                <div class="sprint-items-work-left">
+                  {{ 'WORK_LEFT_X_HOURS' | translate: {hours: sprint.totalWorkLeft} }}
+                </div>
+              </div>
+        
+              <ion-item>
+                <ion-textarea
+                  label="{{ 'DESCRIPTION' | translate }}"
+                  labelPlacement="floating"
+                  type="text"
+                  rows="3"
+                  placeholder="{{ 'DESCRIPTION' | translate }}"
+                  maxlength="5000"
+                  [(ngModel)]="sprint.formDescription"
+                  (ngModelChange)="onFormChangesMade(sprint.id)"
+                ></ion-textarea>
+              </ion-item>
+
+              <ion-item>
+                <ion-input
+                  label="{{ 'START_DATE' | translate }}"
+                  value="{{ sprint.formStartDate }}"
+                  [id]="'start_date_' + i"
+                  class="start-date-input"
+                ></ion-input>
+                <ion-popover [trigger]="'start_date_' + i" >
+                  <ng-template>
+                    <ion-datetime
+                      presentation="date"
+                      [(ngModel)]="sprint.formStartDate"
+                      (ngModelChange)="onFormChangesMade(sprint.id)"
+                    ></ion-datetime>
+                  </ng-template>
+                </ion-popover>
+
+                <ion-input
+                  slot="end"
+                  label="{{ 'END_DATE' | translate }}"
+                  value="{{ sprint.formEndDate }}"
+                  [id]="'end_date_' + i"
+                  class="end-date-input"
+                ></ion-input>
+                <ion-popover [trigger]="'end_date_' + i" >
+                  <ng-template>
+                    <ion-datetime
+                      presentation="date"
+                      [(ngModel)]="sprint.formEndDate"
+                      (ngModelChange)="onFormChangesMade(sprint.id)"
+                    ></ion-datetime>
+                  </ng-template>
+                </ion-popover>
+              </ion-item>
+
+              <div class="sprint-actions">
+                <ion-button
+                  [disabled]="!sprint.formChangesMade"
+                  fill="solid"
+                  color="success"
+                  (click)="onSaveChangesClick(sprint.id)"
+                >
+                  {{ 'SAVE_CHANGES' | translate }}
+                </ion-button>
+                <ion-button
+                  *ngIf="sprint.id !== project?.currentSprintId"
+                  fill="solid"
+                  color="primary"
+                  (click)="onSetActiveClick(sprint.id)"
+                >
+                  {{ 'SET_AS_ACTIVE' | translate }}
+                </ion-button>
+                <ion-button
+                  *ngIf="sprint.id === project?.currentSprintId"
+                  fill="solid"
+                  color="warning"
+                  (click)="onCompleteClick(sprint.id)"
+                >
+                  {{ 'COMPLETE' | translate }}
+                </ion-button>
+                <ion-button
+                  class="delete-button"
+                  fill="solid"
+                  color="danger"
+                  (click)="onDeleteClick(sprint.id)"
+                >
+                  {{ 'DELETE_SPRINT' | translate }}
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Modal -->
+  <app-sprint-create-modal
+    [isOpen]="isCreateModalOpen"
+    [projectId]="project?._id || ''"
+    [sprintLength]="project?.settings?.sprint_length || 14"
+    (closeModal)="onCreateModalClose()"
+    (confirmModal)="onCreateModalConfirm($event)">
+  </app-sprint-create-modal>
+</ion-content>

@@ -1,0 +1,13 @@
+.file-details-list-item {
+  ion-label {
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap;
+  }
+}
+
+.project-storage-folder {
+  ion-text {
+    padding: 16px 0px;
+  }
+}

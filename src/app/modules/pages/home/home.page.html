@@ -1,0 +1,90 @@
+<ion-header [translucent]="true">
+  <app-home-navbar [showLogin]="!user"></app-home-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'TASK_VISION' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div>
+    <div class="home">
+      <div class="content">
+        <ng-container *ngIf="!user">
+          <div class="register">
+            <div class="register-block personal">
+              <div class="register-block-content">
+                <h1>{{ 'PERSONAL_ACCOUNT' | translate }}</h1>
+                <p>{{ 'LOREM_IPSUM_2' | translate }}</p>
+                <ion-button
+                  class="register-block-button"
+                  color="dark"
+                  (click)="goToRegisterUser()"
+                >
+                  {{ 'REGISTER' | translate }}
+                </ion-button>
+              </div>
+            </div>
+            <div class="register-block organization">
+              <div class="register-block-content">
+                <h1>{{ 'ORGANIZATION_ACCOUNT' | translate }}</h1>
+                <p>{{ 'LOREM_IPSUM_2' | translate }}</p>
+                <ion-button
+                  class="register-block-button"
+                  color="dark"
+                  (click)="goToRegisterOrganization()"
+                >
+                  {{ 'REGISTER' | translate }}
+                </ion-button>
+              </div>
+            </div>
+            <div class="register-block-mobile">
+              <div class="register-block-content">
+                <h1>{{ 'PERSONAL_ACCOUNT' | translate }}</h1>
+                <ion-button
+                  class="register-block-button"
+                  color="dark"
+                  (click)="goToRegisterUser()"
+                >
+                  {{ 'REGISTER' | translate }}
+                </ion-button>
+              </div>
+              <div class="register-block-content">
+                <h1>{{ 'ORGANIZATION_ACCOUNT' | translate }}</h1>
+                <ion-button
+                  class="register-block-button"
+                  color="dark"
+                  (click)="goToRegisterOrganization()"
+                >
+                  {{ 'REGISTER' | translate }}
+                </ion-button>
+              </div>
+            </div>
+            <div class="login">
+              <p>{{ 'ALREADY_HAVE_AN_ACCOUNT' | translate }}</p>
+              <ion-button (click)="goToLogin()">{{ 'LOGIN' | translate }}</ion-button>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="user">
+          <div class="welcome-back">
+            <div class="welcome-block">
+              <h1>{{ 'WELCOME_BACK' | translate }}</h1>
+              <p class="logged-in-email">{{ 'YOURE_LOGGED_IN_WITH' | translate: { email: user.email } }}</p>
+              <p (click)="logout()" class="logout">{{ 'CLICK_HERE_TO_LOGOUT' | translate }}</p>
+              <ion-button
+                class="go-to-board-button"
+                color="primary"
+                (click)="goToBoard()"
+              >
+                {{ 'GO_TO_BOARD' | translate }}
+              </ion-button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</ion-content>

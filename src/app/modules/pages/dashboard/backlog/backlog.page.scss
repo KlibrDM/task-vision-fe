@@ -1,0 +1,45 @@
+ion-content {
+  background-color: var(--main-bg-color);
+  background: var(--main-bg-gradient);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.backlog-container {
+  border-radius: 8px;
+  box-shadow: var(--item-shadow);
+}
+
+.backlog-view-segments {
+  background-color: var(--item-bg-color);
+  border-radius: 8px 8px 0 0;
+}
+
+.backlog-content {
+  background-color: var(--item-bg-color);
+  padding-top: 4px;
+  padding-bottom: 8px;
+  border-radius: 0 0 8px 8px;
+}
+
+.sprint-title, .section-title {
+  margin-left: 16px;
+  font-size: 1.2em;
+  font-weight: 500;
+  margin-bottom: 0;
+  margin-top: 16px;
+}
+
+.sprint-description {
+  margin: 0 16px 0 16px;
+  white-space: pre;
+}
+
+.no-active-sprint {
+  margin-left: 16px;
+  margin-top: 16px;
+}

@@ -1,0 +1,366 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'PROJECT_SETTINGS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="profile">
+      <div class="content" *ngIf="project">
+        <!-- Header -->
+        <div class="project-settings-header">
+          <app-general-header
+            name="{{ 'PROJECT_X_SETTINGS' | translate: { project: project.name } }}"
+          ></app-general-header>
+        </div>
+
+        <div class="settings-cards">
+          <!-- GENERAL CARD -->
+          <ion-card class="general-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'GENERAL' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-item>
+                <ion-input
+                  label="{{ 'PROJECT_NAME' | translate }}"
+                  labelPlacement="fixed"
+                  type="text"
+                  maxlength="120"
+                  required
+                  [(ngModel)]="name"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-input
+                  label="{{ 'CODE' | translate }}"
+                  labelPlacement="fixed"
+                  type="text"
+                  maxlength="4"
+                  required
+                  [(ngModel)]="code"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-textarea
+                  label="{{ 'DESCRIPTION' | translate }}"
+                  labelPlacement="fixed"
+                  rows="4"
+                  [(ngModel)]="description"
+                ></ion-textarea>
+              </ion-item>
+              
+              <ion-item>
+                <ion-input
+                  label="{{ 'PROJECT_START_DATE' | translate }}"
+                  value="{{ startDate }}"
+                  id="start_date">
+                </ion-input>
+                <ion-popover trigger="start_date" >
+                  <ng-template>
+                    <ion-datetime presentation="date" [(ngModel)]="startDate"></ion-datetime>
+                  </ng-template>
+                </ion-popover>
+              </ion-item>
+        
+              <ion-item>
+                <ion-input
+                  label="{{ 'ESTIMATED_END_DATE' | translate }}"
+                  value="{{ endDate }}"
+                  id="end_date">
+                </ion-input>
+                <ion-popover trigger="end_date" >
+                  <ng-template>
+                    <ion-datetime presentation="date" [(ngModel)]="endDate"></ion-datetime>
+                  </ng-template>
+                </ion-popover>
+              </ion-item>
+
+              <ion-button (click)="onGeneralSave()">
+                {{ 'SAVE' | translate }}
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- COLUMNS CARD -->
+          <ion-card class="columns-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'BOARD_COLUMNS' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-item
+                *ngFor="let column of boardColumns, let i = index; trackBy:trackByFn"
+                class="column-item"
+              >
+                <ion-input
+                  label="{{ 'COLUMN_X' | translate: { index: i + 1 } }}"
+                  labelPlacement="floating"
+                  type="text"
+                  maxlength="30"
+                  class="column-input"
+                  [(ngModel)]="boardColumns[i]"
+                >
+                  <ion-text
+                    *ngIf="qaColumn === boardColumns[i]"
+                    slot="end"
+                    class="column-type-text"
+                  >
+                    {{ 'QA_COLUMN' | translate }}
+                  </ion-text>
+                  <ion-text
+                    *ngIf="blockedColumn === boardColumns[i]"
+                    slot="end"
+                    class="column-type-text"
+                  >
+                    {{ 'BLOCKED_COLUMN' | translate }}
+                  </ion-text>
+                  <ion-text
+                    *ngIf="doneColumn === boardColumns[i]"
+                    slot="end"
+                    class="column-type-text"
+                  >
+                    {{ 'DONE_COLUMN' | translate }}
+                  </ion-text>
+                  <ion-button
+                    fill="clear"
+                    slot="end"
+                    color="danger"
+                    matTooltip="{{ 'REMOVE_COLUMN_TYPE' | translate }}"
+                    matTooltipPosition="above"
+                    (click)="removeColumnType(i)"
+                    *ngIf="
+                      qaColumn === boardColumns[i]
+                      || blockedColumn === boardColumns[i]
+                      || doneColumn === boardColumns[i]
+                    "
+                  >
+                    <ion-icon slot="icon-only" name="remove-outline" aria-hidden="true"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    slot="end"
+                    color="warning"
+                    matTooltip="{{ 'SET_AS_QA_COLUMN' | translate }}"
+                    matTooltipPosition="above"
+                    (click)="setAsQAColumn(i)"
+                    *ngIf="
+                      qaColumn !== boardColumns[i]
+                      && blockedColumn !== boardColumns[i]
+                      && doneColumn !== boardColumns[i]
+                    "
+                  >
+                    <ion-icon slot="icon-only" name="flask-outline" aria-hidden="true"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    slot="end"
+                    color="danger"
+                    matTooltip="{{ 'SET_AS_BLOCKED_COLUMN' | translate }}"
+                    matTooltipPosition="above"
+                    (click)="setAsBlockedColumn(i)"
+                    *ngIf="
+                      qaColumn !== boardColumns[i]
+                      && blockedColumn !== boardColumns[i]
+                      && doneColumn !== boardColumns[i]
+                    "
+                  >
+                    <ion-icon slot="icon-only" name="ban-outline" aria-hidden="true"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    slot="end"
+                    color="success"
+                    matTooltip="{{ 'SET_AS_DONE_COLUMN' | translate }}"
+                    matTooltipPosition="above"
+                    (click)="setAsDoneColumn(i)"
+                    *ngIf="
+                      qaColumn !== boardColumns[i]
+                      && blockedColumn !== boardColumns[i]
+                      && doneColumn !== boardColumns[i]
+                    "
+                  >
+                    <ion-icon slot="icon-only" name="checkmark-outline" aria-hidden="true"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    *ngIf="boardColumns.length > 1"
+                    fill="clear"
+                    slot="end"
+                    matTooltip="{{ 'REMOVE_COLUMN' | translate }}"
+                    matTooltipPosition="above"
+                    (click)="removeColumn(i)"
+                  >
+                    <ion-icon slot="icon-only" name="close-outline" aria-hidden="true"></ion-icon>
+                  </ion-button>
+                </ion-input>
+              </ion-item>
+
+              <p *ngIf="!doneColumn" class="no-done-column-warning">
+                {{ 'NO_DONE_COLUMN_WARNING' | translate }}
+              </p>
+        
+              <ion-button (click)="addColumn()" class="action-button">
+                <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                {{ 'ADD_COLUMN' | translate }}
+              </ion-button>
+
+              <ion-button
+                class="action-button"
+                (click)="onColumnsSave()"
+              >
+                {{ 'SAVE' | translate }}
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- SETTINGS CARD -->
+          <ion-card class="settings-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'SETTINGS' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="useSprints"
+                  matTooltip="{{ 'USE_SPRINTS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'USE_SPRINTS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ng-container *ngIf="useSprints">
+                <ion-item>
+                  <ion-select
+                    label="{{ 'SPRINT_LENGTH' | translate }}"
+                    placeholder="{{ 'SPRINT_LENGTH' | translate }}"
+                    justify="start"
+                    [(ngModel)]="sprintLength"
+                  >
+                    <ion-select-option [value]="7">{{ 'ONE_WEEK' | translate }}</ion-select-option>
+                    <ion-select-option [value]="14">{{ 'TWO_WEEKS' | translate }}</ion-select-option>
+                    <ion-select-option [value]="21">{{ 'THREE_WEEKS' | translate }}</ion-select-option>
+                    <ion-select-option [value]="28">{{ 'FOUR_WEEKS' | translate }}</ion-select-option>
+                    <ion-select-option [value]="'custom'">{{ 'CUSTOM' | translate }}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+          
+                <ion-item *ngIf="sprintLength === 'custom'">
+                  <ion-input
+                    label="{{ ('SPRINT_LENGTH' | translate) + ' (' + ('DAYS' | translate) + ')' }}"
+                    labelPlacement="start"
+                    type="number"
+                    min="1"
+                    max="1000"
+                    placeholder="{{ ('SPRINT_LENGTH' | translate) + ' (' + ('DAYS' | translate) + ')' }}"
+                    [(ngModel)]="customSprintLength"
+                  ></ion-input>
+                </ion-item>
+              </ng-container>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="forceEpicLink"
+                  matTooltip="{{ 'FORCE_EPIC_LINK_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'FORCE_EPIC_LINK' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="autoShowLinkedRequirements"
+                  matTooltip="{{ 'AUTO_SHOW_LINKED_REQUIREMENTS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'AUTO_SHOW_LINKED_REQUIREMENTS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="enableMultiSprintItems"
+                  matTooltip="{{ 'MULTI_SPRINT_ITEMS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'MULTI_SPRINT_ITEMS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="enableHourTracking"
+                  matTooltip="{{ 'HOUR_TRACKING_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'HOUR_TRACKING' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="enableReactivity"
+                  matTooltip="{{ 'REACTIVITY_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'REACTIVITY' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="autoMoveToQA"
+                  matTooltip="{{ 'AUTO_MOVE_TO_QA_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'AUTO_MOVE_TO_QA' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-button (click)="onSettingsSave()" >
+                {{ 'SAVE' | translate }}
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

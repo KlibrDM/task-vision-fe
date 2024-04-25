@@ -1,0 +1,40 @@
+<ion-modal [isOpen]="isDetailsOpen" *ngIf="detailsDoc" [backdropDismiss]="false">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ 'FILE_DETAILS' | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeDetails()">{{ 'CLOSE' | translate }}</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-list>
+        <ion-item class="file-details-list-item">
+          <ion-label>{{ 'NAME' | translate }}:&nbsp;</ion-label>
+          <ion-text>{{ detailsDoc.name }}</ion-text>
+        </ion-item>
+        <ion-item class="file-details-list-item">
+          <ion-label>{{ 'PATH' | translate }}:&nbsp;</ion-label>
+          <ion-text>{{ (detailsDoc.structure_path === '/' ? '' : detailsDoc.structure_path + '/') + detailsDoc.name }}</ion-text>
+        </ion-item>
+        <ion-item class="file-details-list-item">
+          <ion-label>{{ 'TYPE' | translate }}:&nbsp;</ion-label>
+          <ion-text>{{ detailsDoc.is_folder ? ('FOLDER' | translate) : ('PAGE' | translate) }}</ion-text>
+        </ion-item>
+        <ion-item class="file-details-list-item">
+          <ion-label>{{ 'OWNER' | translate }}:&nbsp;</ion-label>
+          <ion-text>{{ getUserNameAtId(detailsDoc.ownerId) }}</ion-text>
+        </ion-item>
+        <ion-item class="file-details-list-item" *ngIf="!detailsDoc.is_folder">
+          <ion-label>{{ 'UPDATED_AT' | translate }}:&nbsp;</ion-label>
+          <ion-text>{{ detailsDoc.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</ion-text>
+        </ion-item>
+        <ion-item class="file-details-list-item">
+          <ion-label>{{ 'CREATED_AT' | translate }}:&nbsp;</ion-label>
+          <ion-text>{{ detailsDoc.createdAt | date: 'dd/MM/yyyy HH:mm' }}</ion-text>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

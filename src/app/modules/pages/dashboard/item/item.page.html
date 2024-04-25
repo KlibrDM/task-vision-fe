@@ -1,0 +1,73 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'DETAILS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="more">
+      <div class="content" *ngIf="item">
+        <div class="item-header">
+          <div class="item-header">
+            <p *ngIf="!item.deleted" class="item-code">
+              {{ item.code }}
+            </p>
+            <p *ngIf="item.deleted" class="item-code">
+              {{ 'DELETED' | translate }} ({{ item.code }})
+            </p>
+            <div class="actions">
+              <ion-button
+                *ngIf="allowEdit"
+                color="danger"
+                (click)="onDiscardChangesClick()"
+              >
+                {{ 'DISCARD_CHANGES' | translate }}
+              </ion-button>
+              <ion-button
+                *ngIf="allowEdit"
+                color="success"
+                (click)="onSaveChangesClick()"
+              >
+                {{ 'SAVE_CHANGES' | translate }}
+              </ion-button>
+              <ion-button
+                *ngIf="!allowEdit && !item.deleted"
+                (click)="onAllowEditClick()"
+              >
+                {{ 'EDIT' | translate }}
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-content">
+          <app-item-details-content
+            [allowEdit]="allowEdit"
+            [item]="item"
+            [items]="items"
+            [user]="user"
+            [project]="project"
+            [assignees]="projectUsers || []"
+            [epics]="epics || []"
+            [sprints]="sprints || []"
+            [allowEditClicked]="allowEditClicked.asObservable()"
+            [discardClicked]="discardClicked.asObservable()"
+            [saveClicked]="saveClicked.asObservable()"
+            (itemDeleted)="onItemDeleted()"
+          ></app-item-details-content>
+        </div>
+      </div>
+
+      <div class="content" *ngIf="!item && !isLoading">
+        <div class="item-not-found">
+          <h2>{{ 'ITEM_NOT_FOUND' | translate }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

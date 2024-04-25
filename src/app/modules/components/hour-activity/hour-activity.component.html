@@ -1,0 +1,59 @@
+<div class="container">
+  <div class="top-button-group">
+    <ion-button
+      fill="clear"
+      class="refresh-logs-button"
+      (click)="refreshLogs()"
+    >
+      <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="list">
+    <div class="date-group" *ngFor="let day of activityView">
+      <div class="date">
+        {{ day.dateGroup | date: 'EEEE dd/MM/yyyy'}}
+      </div>
+      <ion-list>
+        <ion-item *ngFor="let log of day.logs">
+          <div class="item">
+            <div class="left-side">
+              <div class="log-date">
+                {{ log.createdAt | date: 'HH:mm' }}
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="log-trigger" *ngIf="log.logTriggerId">
+                {{getUserName(log.logTriggerId)}}
+              </div>
+              <div class="log-trigger" *ngIf="!log.logTriggerId && log.logTrigger === LogTrigger.SYSTEM">
+                {{ 'SYSTEM' | translate }}
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="log-hours" *ngIf="log.oldValue && log.newValue">
+                {{ 'X_HOURS' | translate: {hours: ((Number(log.oldValue) - Number(log.newValue)) | absolute)} }}
+              </div>
+            </div>
+
+            <div class="right-side">
+              <ng-container *ngIf="log.changedField && log.oldValue && log.newValue">
+                {{ log.changedField.toUpperCase() | translate }}: {{log.oldValue}} > {{log.newValue}}
+              </ng-container>
+            </div>
+          </div>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+
+  <ion-list *ngIf="logs?.length === 0">
+    <ion-item>
+      <div class="no-logs">
+        {{ 'NO_ACTIVITY_FOUND' | translate }}
+      </div>
+    </ion-item>
+  </ion-list>
+</div>

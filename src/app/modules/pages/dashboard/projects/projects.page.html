@@ -1,0 +1,63 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'PROJECTS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="projects">
+      <div class="content">
+        <!-- Header -->
+        <ion-card>
+          <ion-card-header>
+            <div class="projects-header">
+              <ion-card-title>{{ 'PROJECTS' | translate }}</ion-card-title>
+              <ion-button (click)="openCreateModal()">
+                <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                {{ 'CREATE' | translate }}
+              </ion-button>
+            </div>
+          </ion-card-header>
+        </ion-card>
+
+        <!-- No projects warning -->
+        <ng-container *ngIf="!projects?.length">
+          <ion-card class="no-projects">
+            <ion-card-header>
+              <ion-card-title>{{ 'NO_PROJECTS' | translate }}</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+        </ng-container>
+
+        <!-- Project list -->
+        <ng-container *ngIf="projects?.length">
+          <ion-card *ngFor="let project of projects" (click)="goToBoard(project)" class="project-card">
+            <ion-card-header>
+              <ion-card-title>{{ project.name }} <small>({{ project.code }})</small></ion-card-title>
+              <ion-card-subtitle class="project-description">{{ project.description }}</ion-card-subtitle>
+              <ion-card-subtitle>
+                {{
+                  project.users.length === 1
+                  ? ('X_MEMBER' | translate: { count: project.users.length })
+                  : ('X_MEMBERS' | translate: { count: project.users.length })
+                }}
+              </ion-card-subtitle>
+            </ion-card-header>
+          </ion-card>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Modal -->
+  <app-projects-create-modal
+    [isOpen]="isCreateModalOpen"
+    (closeModal)="onCreateModalClose()"
+    (confirmModal)="onCreateModalConfirm($event)">
+  </app-projects-create-modal>
+</ion-content>

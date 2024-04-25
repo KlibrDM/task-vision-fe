@@ -1,0 +1,13 @@
+ion-modal {
+  --width: 100vw;
+  --height: 100dvh;
+
+  img {
+    cursor: zoom-in;
+  }
+}
+
+.image-full-size {
+  max-width: unset;
+  cursor: zoom-out !important;
+}

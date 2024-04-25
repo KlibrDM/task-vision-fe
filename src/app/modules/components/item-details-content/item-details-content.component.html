@@ -1,0 +1,1247 @@
+<div class="content" *ngIf="item">
+  <div class="main">
+    <ion-item>
+      <ion-input
+        label="{{ 'NAME' | translate }}"
+        labelPlacement="floating"
+        type="text"
+        placeholder="{{ 'NAME' | translate }}"
+        required
+        maxlength="200"
+        [readonly]="!allowEdit"
+        [(ngModel)]="item.name"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item *ngIf="item.ai_summary && item.ai_summary.length">
+      <ion-textarea
+        label="{{ 'AI_SUMMARY' | translate }}"
+        labelPlacement="floating"
+        type="text"
+        autoGrow
+        placeholder="{{ 'AI_SUMMARY' | translate }}"
+        maxlength="10000"
+        [readonly]="!allowEdit"
+        [(ngModel)]="item.ai_summary"
+      ></ion-textarea>
+    </ion-item>
+
+    <ion-item *ngIf="allowEdit && !item.ai_summary">
+      <ion-label class="generate-ai-summary-label">
+        {{ 'AI_SUMMARY' | translate}}
+      </ion-label>
+      <ion-button
+        *ngIf="!isAISummaryGenerating"
+        fill="solid"
+        color="primary"
+        (click)="onGenerateAISummary()"
+        [disabled]="!item.name || !item.description"
+      >
+        <ion-icon name="sparkles-outline"></ion-icon>
+        &nbsp;
+        {{ 'GENERATE_AI_SUMMARY' | translate }}
+      </ion-button>
+      <ion-spinner *ngIf="isAISummaryGenerating"></ion-spinner>
+    </ion-item>
+
+    <ion-item>
+      <ion-label
+        position="stacked"
+        id="description-label"
+        name="description-label"
+      >
+        {{ 'DESCRIPTION' | translate }}
+      </ion-label>
+      <div class="description-edit-area" *ngIf="allowEdit">
+        <div class="description-view-switches">
+          <div
+            class="description-view-switch"
+            [class.description-view-switch-active]="seeRawDescription"
+            (click)="setDescriptionView('raw')"
+          >
+            {{ 'EDIT' | translate }}
+          </div>
+          <div
+            class="description-view-switch"
+            [class.description-view-switch-active]="!seeRawDescription"
+            (click)="setDescriptionView('md')"
+          >
+            {{ 'PREVIEW' | translate }}
+          </div>
+        </div>
+
+        <!-- MARKDOWN -->
+        <div
+          *ngIf="!seeRawDescription"
+          class="description-markdown markdown-text"
+          tabindex="0"
+          [innerHTML]="descriptionMD"
+        ></div>
+
+        <!-- TEXTAREA -->
+        <ion-textarea
+          *ngIf="seeRawDescription"
+          aria-labelledby="description-label"
+          type="text"
+          autoGrow
+          placeholder="{{ 'DESCRIPTION' | translate }}"
+          maxlength="30000"
+          helperText="{{ 'MARKDOWN_IS_SUPPORTED' | translate }}"
+          [(ngModel)]="item.description"
+        ></ion-textarea>
+      </div>
+
+      <div *ngIf="!allowEdit"
+        class="description-markdown markdown-text"
+        tabindex="0"
+        [innerHTML]="descriptionMD"
+      ></div>
+    </ion-item>
+
+    <ion-item *ngIf="project?.settings?.auto_show_linked_requirements && requirements">
+      <ion-label position="stacked">{{ 'REQUIREMENTS' | translate }}</ion-label>
+      <div
+        class="requirements-markdown markdown-text"
+        [innerHTML]="requirementsMD"
+      ></div>
+    </ion-item>
+
+    <!-- ATTACHMENTS -->
+    <div class="attachments">
+      <h2 class="attachments-title">
+        {{ 'ATTACHMENTS' | translate }}
+      </h2>
+
+      <div class="attachments-list">
+        <div *ngFor="let attachment of itemAttachments" class="attachment">
+          <!-- IMAGES -->
+          <ng-container *ngIf="Constants.FileTypesImages.includes(attachment.type)">
+            <img [src]="attachment.blobUrl" [alt]="attachment.name" oncontextmenu="return false;" />
+            <ion-icon
+              class="attachment-action attachment-expand"
+              name="expand-outline"
+              color="dark"
+              (click)="onExpandAttachmentClick(attachment, attachment.blobUrl)"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="!item.deleted && allowEdit"
+              class="attachment-action attachment-add-to-description"
+              name="add-circle-outline"
+              color="dark"
+              (click)="onAddToDescriptionAttachmentClick(attachment, attachment.blobUrl)"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="!item.deleted"
+              class="attachment-action attachment-download"
+              name="cloud-download-outline"
+              color="dark"
+              (click)="onDownloadAttachmentClick(attachment, attachment.blobUrl)"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="!item.deleted"
+              class="attachment-action attachment-delete"
+              name="trash-outline"
+              color="danger"
+              (click)="onDeleteAttachmentClick(attachment)"
+            ></ion-icon>
+          </ng-container>
+
+          <!-- VIDEOS -->
+          <ng-container *ngIf="Constants.FileTypesVideos.includes(attachment.type)">
+            <div class="video-attachment">
+              <ion-icon
+                name="film-outline"
+                color="dark"
+              ></ion-icon>
+              <span>{{ attachment.name }}</span>
+            </div>
+            <ion-icon
+              class="attachment-action attachment-expand"
+              name="expand-outline"
+              color="dark"
+              (click)="onExpandAttachmentClick(attachment, attachment.blobUrl)"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="!item.deleted"
+              class="attachment-action attachment-download"
+              name="cloud-download-outline"
+              color="dark"
+              (click)="onDownloadAttachmentClick(attachment, attachment.blobUrl)"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="!item.deleted"
+              class="attachment-action attachment-delete"
+              name="trash-outline"
+              color="danger"
+              (click)="onDeleteAttachmentClick(attachment)"
+            ></ion-icon>
+          </ng-container>
+
+          <!-- OTHERS -->
+          <ng-container *ngIf="
+            !Constants.FileTypesImages.includes(attachment.type)
+            && !Constants.FileTypesVideos.includes(attachment.type)
+          ">
+            <div class="general-attachment"><span>{{ attachment.name }}</span></div>
+            <ion-icon
+              *ngIf="!item.deleted"
+              class="attachment-action attachment-download"
+              name="cloud-download-outline"
+              color="dark"
+              (click)="onDownloadAttachmentClick(attachment, attachment.blobUrl)"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="!item.deleted"
+              class="attachment-action attachment-delete"
+              name="trash-outline"
+              color="danger"
+              (click)="onDeleteAttachmentClick(attachment)"
+            ></ion-icon>
+          </ng-container>
+        </div>
+      </div>
+
+      <form class="attachments-form" *ngIf="!item.deleted">
+        <div class="attachments-row">
+          <label for="item-details-content-file-upload" class="item-details-content-file-upload">
+            <span class="file-title">{{ 'UPLOAD_FILES' | translate }}</span>
+          </label>
+          <input
+            id="item-details-content-file-upload"
+            type="file"
+            multiple
+            #fileInput
+            (change)="onFileSelected($event)"
+          />
+        </div>
+        <div class="attachments-form-list" *ngIf="selectedFiles.length">
+          <div class="attachments-form-item" *ngFor="let file of selectedFiles">
+            <span>{{ file.name }}</span>
+            <ion-icon
+              class="attachment-delete"
+              name="close-outline"
+              color="danger"
+              (click)="onFileRemoved(file)"
+            ></ion-icon>
+          </div>
+        </div>
+        <ion-button
+          *ngIf="selectedFiles.length"
+          fill="solid"
+          color="success"
+          class="attachments-upload-button"
+          (click)="onFileUploadClick()"
+        >
+          {{ 'UPLOAD' | translate }}
+        </ion-button>
+      </form>
+    </div>
+
+    <!-- RELATIONS -->
+    <div class="relations" *ngIf="!(item.deleted && item.relations?.length === 0)">
+      <h2 class="relations-title">
+        {{ 'RELATIONS' | translate }}
+      </h2>
+
+      <div class="relations-section">
+        <div
+          *ngFor="let relation of item.relations"
+          class="relation"
+        >
+          <div class="relation-type">
+            {{ (relation.type | translate) + "&nbsp;" }}
+          </div>
+          <a [routerLink]="['/app/item/' + relation.itemId]" (click)="pageLeave.emit()">
+            {{ getItemNameAtId(relation.itemId) }}
+          </a>
+          <ion-icon
+            *ngIf="!item.deleted"
+            class="relation-delete"
+            name="close-outline"
+            color="danger"
+            (click)="onDeleteRelationClick(relation)"
+          ></ion-icon>
+        </div>
+      </div>
+
+      <div
+        *ngIf="newRelation"
+        class="new-relation"
+      >
+        <h2 class="new-relation-title">
+          {{ 'NEW_RELATION' | translate }}
+        </h2>
+
+        <div class="new-relation-item">
+          <ion-item class="new-relation-item-type">
+            <ion-select
+              label="{{ 'RELATION_TYPE' | translate }}"
+              placeholder="{{ 'RELATION_TYPE' | translate }}"
+              labelPlacement="floating"
+              justify="start"
+              [(ngModel)]="newRelation.type"
+            >
+              <ion-select-option
+                *ngFor="let relation of itemRelations"
+                [value]="relation">
+                {{ relation | translate }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item class="new-relation-item-name">
+            <ion-input
+              label="{{ 'RELATION_ITEM' | translate }}"
+              labelPlacement="stacked"
+              type="text"
+              placeholder="{{ 'SEARCH_FOR_ITEM' | translate }}"
+              readonly
+              value="{{ newRelationItemName }}"
+            ></ion-input>
+          </ion-item>
+        </div>
+        
+        <ion-item class="new-relation-search">
+          <ion-input
+            label="{{ 'SEARCH_ITEM' | translate }}"
+            labelPlacement="floating"
+            type="text"
+            placeholder="{{ 'SEARCH_ITEM' | translate }}"
+            [(ngModel)]="newRelationSearch"
+            (ngModelChange)="onNewRelationSearchChange()"
+          ></ion-input>
+        </ion-item>
+
+        <ion-list class="new-relation-search-list">
+          <ion-item
+            *ngFor="let item of relationSearchResults"
+            (click)="onNewRelationSearchItemClick(item)"
+          >
+            {{ item.code + ' - ' + item.name }}
+          </ion-item>
+        </ion-list>
+
+        <div class="new-relation-button-group">
+          <ion-button
+            fill="solid"
+            [disabled]="!newRelation.itemId || !newRelation.type"
+            (click)="onSaveRelationClick()"
+            [textContent]="'SAVE' | translate"
+          ></ion-button>
+          <ion-button
+            fill="solid"
+            color="danger"
+            (click)="onCancelNewRelationClick()"
+            [textContent]="'CANCEL' | translate"
+          ></ion-button>
+        </div>
+      </div>
+
+      <ion-button
+        *ngIf="!newRelation && !item.deleted"
+        class="new-relation-button"
+        fill="solid"
+        (click)="onAddRelationClick()"
+        [textContent]="'NEW_RELATION' | translate"
+      ></ion-button>
+    </div>
+
+    <div class="details-extras-segments">
+      <ion-segment
+        scrollable
+        [value]="selectedViewSegment"
+        (ionChange)="onSelectedViewChange($event)"
+      >
+        <ion-segment-button value="comments">
+          <ion-label>{{ 'COMMENTS' | translate }}</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="details" class="mobile-only-flex">
+          <ion-label>{{ 'DETAILS' | translate }}</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="logs">
+          <ion-label>{{ 'LOGS' | translate }}</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="hour_activity" *ngIf="project?.settings?.enable_hour_tracking">
+          <ion-label>{{ 'HOUR_ACTIVITY' | translate }}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- EXTRA SEGMENTS -->
+    <!--
+      Using display none instead of conditional rendering in order
+      to keep the state of the content when switching between them
+    -->
+    <!-- COMMENTS -->
+    <div
+      class="comments"
+      [class.display-none]="selectedViewSegment !== 'comments'"
+    >
+      <div class="comment-section">
+        <div
+          *ngFor="let comment of item.comments"
+          class="comment"
+        >
+          <div class="comment-author">
+            {{ getUserNameAtId(comment.userId) }}
+            <span
+              class="timestamp"
+              matTooltip="{{ moment(comment.timestamp).format(Constants.DATE_TIME_FORMAT) }}"
+              matTooltipShowDelay="500"
+              matTooltipPosition="above"
+            >
+              {{ moment(comment.timestamp).fromNow() }}
+            </span>
+            <div
+              *ngIf="canDeleteComment(comment.userId)"
+              class="delete"
+            >
+              <ion-icon
+                name="close-outline"
+                color="danger"
+                (click)="onDeleteCommentClick(comment._id)"
+              ></ion-icon>
+            </div>
+          </div>
+          <div class="comment-message">
+            {{ comment.comment }}
+          </div>
+        </div>
+      </div>
+
+      <div class="new-comment-section">
+        <ion-textarea
+          label="{{ 'NEW_COMMENT' | translate }}"
+          labelPlacement="floating"
+          type="text"
+          fill="outline"
+          autoGrow
+          rows="4"
+          maxlength="5000"
+          placeholder="{{ 'WRITE_COMMENT' | translate }}"
+          class="new-comment-textarea"
+          [(ngModel)]="newComment"
+        ></ion-textarea>
+        <ion-button
+          fill="solid"
+          [disabled]="!newComment"
+          (click)="onAddCommentClick()"
+          [textContent]="'SEND' | translate"
+        ></ion-button>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div
+      class="logs"
+      [class.display-none]="selectedViewSegment !== 'logs'"
+    >
+      <app-logs-controller
+        [isOpen]="true"
+        [showOpenButton]="false"
+        [user]="user"
+        [project]="project"
+        [projectUsers]="assignees"
+        [entityId]="item._id"
+        [idList]="generateIdList()"
+      ></app-logs-controller>
+    </div>
+
+    <!-- HOUR ACTIVITY -->
+    <div
+      class="hour-activity"
+      [class.display-none]="selectedViewSegment !== 'hour_activity'"
+    >
+      <app-hour-activity
+        [user]="user"
+        [project]="project"
+        [projectUsers]="assignees"
+        [entityId]="item._id"
+      ></app-hour-activity>
+    </div>
+
+    <!-- DETAILS IS A SIDEBAR COPY -->
+    <!-- MAKE SURE CHANGES ARE REFLECTED -->
+    <div
+      class="sidebar details"
+      [class.display-none]="selectedViewSegment !== 'details'"
+    >
+      <!-- TYPE -->
+      <ion-item *ngIf="allowEdit">
+        <ion-select
+          label="{{ 'TYPE' | translate }}"
+          placeholder="{{ 'TYPE' | translate }}"
+          justify="start"
+          [(ngModel)]="item.type"
+        >
+          <ion-select-option
+            *ngFor="let type of itemTypes"
+            [value]="type">
+            {{ type | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'TYPE' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'TYPE' | translate }}"
+          readonly
+          value="{{ item.type | translate }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- PRIORITY -->
+      <ion-item *ngIf="allowEdit">
+        <ion-select
+          label="{{ 'PRIORITY' | translate }}"
+          placeholder="{{ 'PRIORITY' | translate }}"
+          justify="start"
+          [(ngModel)]="item.priority"
+        >
+          <ion-select-option
+            *ngFor="let priorityVal of itemPriorities"
+            [value]="priorityVal">
+            {{ priorityVal | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'PRIORITY' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'PRIORITY' | translate }}"
+          readonly
+          value="{{ item.priority | translate }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- COLUMN -->
+      <ion-item *ngIf="allowEdit">
+        <ion-select
+          label="{{ 'STATUS' | translate }}"
+          placeholder="{{ 'STATUS' | translate }}"
+          justify="start"
+          [(ngModel)]="item.column"
+        >
+          <ion-select-option
+            *ngFor="let column of columns"
+            [value]="column">
+            {{ column }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'STATUS' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'STATUS' | translate }}"
+          readonly
+          value="{{ item.column }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- REPORTER -->
+      <ion-item>
+        <ion-input
+          label="{{ 'REPORTER' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'REPORTER' | translate }}"
+          readonly
+          [disabled]="allowEdit"
+          value="{{ getUserNameAtId(item.reporterId) }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- ASSIGNEE -->
+      <ion-item *ngIf="allowEdit">
+        <ion-select
+          label="{{ 'ASSIGNEE' | translate }}"
+          placeholder="{{ 'UNASSIGNED' | translate }}"
+          justify="start"
+          [(ngModel)]="item.assigneeId"
+        >
+          <ion-select-option value="[UNASSIGNED]">{{ 'UNASSIGNED' | translate }}</ion-select-option>
+          <ng-container *ngFor="let assignee of assignees">
+            <ion-select-option
+              *ngIf="assignee.is_active"
+              [disabled]="!assignee.is_active"
+              [value]="assignee._id">
+              {{ assignee.first_name + ' ' + assignee.last_name }}
+            </ion-select-option>
+            <ion-select-option
+              *ngIf="!assignee.is_active && item.assigneeId === assignee._id"
+              [disabled]="true"
+              [value]="assignee._id">
+              {{ assignee.first_name + ' ' + assignee.last_name }}
+            </ion-select-option>
+          </ng-container>
+          
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'ASSIGNEE' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'UNASSIGNED' | translate }}"
+          readonly
+          value="{{ getUserNameAtId(item.assigneeId) }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- CREATED AT -->
+      <ion-item>
+        <ion-input
+          label="{{ 'CREATED' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'CREATED' | translate }}"
+          readonly
+          [disabled]="allowEdit"
+          matTooltip="{{ moment(item.createdAt).format(Constants.DATE_TIME_FORMAT) }}"
+          matTooltipShowDelay="500"
+          value="{{ moment(item.createdAt).fromNow() }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- UPDATED AT -->
+      <ion-item>
+        <ion-input
+          label="{{ 'UPDATED' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'UPDATED' | translate }}"
+          readonly
+          [disabled]="allowEdit"
+          matTooltip="{{ moment(item.updatedAt).format(Constants.DATE_TIME_FORMAT) }}"
+          matTooltipShowDelay="500"
+          value="{{ moment(item.updatedAt).fromNow() }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- COMPLEXITY -->
+      <ion-item *ngIf="allowEdit">
+        <ion-input
+          label="{{ 'COMPLEXITY' | translate }}"
+          labelPlacement="start"
+          type="number"
+          min="0"
+          max="10000"
+          placeholder="{{ 'COMPLEXITY' | translate }}"
+          [(ngModel)]="item.complexity"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'COMPLEXITY' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'NOT_SET' | translate }}"
+          readonly
+          value="{{item.complexity}}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- ESTIMATE -->
+      <ion-item *ngIf="allowEdit">
+        <ion-input
+          label="{{ 'ESTIMATE' | translate }}"
+          labelPlacement="start"
+          type="number"
+          min="0"
+          max="10000"
+          placeholder="{{ 'ESTIMATE' | translate }}"
+          [(ngModel)]="item.estimate"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'ESTIMATE' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'NOT_SET' | translate }}"
+          readonly
+          value="{{item.estimate}}"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item *ngIf="project?.settings?.enable_hour_tracking">
+        <ion-input
+          label="{{ 'HOURS_LEFT' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'HOURS_LEFT' | translate }}"
+          readonly
+          [disabled]="allowEdit"
+          value="{{ item.hours_left }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- EPIC LINK -->
+      <ion-item *ngIf="allowEdit && item.type !== itemTypesEnum.EPIC">
+        <ion-select
+          label="{{ 'EPIC' | translate }}"
+          placeholder="{{ 'NOT_LINKED' | translate }}"
+          justify="start"
+          [(ngModel)]="item.epicId"
+        >
+          <ion-select-option
+            value="[UNASSIGNED]"
+            *ngIf="!project?.settings?.force_epic_link"
+          >
+            {{ 'NOT_LINKED' | translate }}
+          </ion-select-option>
+          <ion-select-option
+            *ngFor="let epic of selfFilteredEpics"
+            [value]="epic._id">
+            {{ epic.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit && item.type !== itemTypesEnum.EPIC">
+        <ion-input *ngIf="!item.epicId"
+          label="{{ 'EPIC' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'NOT_LINKED' | translate }}"
+          readonly
+        ></ion-input>
+        <ng-container *ngIf="item.epicId">
+          <p class="epic-link-label">{{ 'EPIC' | translate }}</p>
+          <a
+            *ngIf="item.epicId"
+            [routerLink]="['/app/item/' + item.epicId]"
+            (click)="pageLeave.emit()"
+          >
+            <ion-chip *ngIf="item.epicId" class="item-epic">{{ getEpicNameAtId(item.epicId) }}</ion-chip>
+          </a>
+        </ng-container>
+      </ion-item>
+
+      <!-- SPRINT -->
+      <ion-item *ngIf="allowEdit">
+        <ion-select
+          label="{{ 'SPRINT' | translate }}"
+          placeholder="{{ 'BACKLOG' | translate }}"
+          justify="start"
+          [multiple]="project?.settings?.enable_multi_sprint_items"
+          [(ngModel)]="item.sprintId"
+        >
+          <ion-select-option
+            value="[UNASSIGNED]"
+            *ngIf="!project?.settings?.enable_multi_sprint_items"
+          >
+            {{ 'BACKLOG' | translate }}
+          </ion-select-option>
+          <ion-select-option
+            *ngFor="let sprint of sprints"
+            [value]="sprint._id">
+            {{ sprint.name }} <span *ngIf="sprint._id === project?.currentSprintId">({{ 'ACTIVE' | translate }})</span>
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'SPRINT' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'BACKLOG' | translate }}"
+          readonly
+          value="{{ getSprintNameAtId(item.sprintId) }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- RESOLUTION -->
+      <ion-item *ngIf="allowEdit">
+        <ion-select
+          label="{{ 'RESOLUTION' | translate }}"
+          placeholder="{{ 'NOT_SET' | translate }}"
+          justify="start"
+          [(ngModel)]="item.resolution"
+        >
+          <ion-select-option value="[UNASSIGNED]">{{ 'NOT_SET' | translate }}</ion-select-option>
+          <ion-select-option
+            *ngFor="let resolution of itemResolutions"
+            [value]="resolution">
+            {{ resolution | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-input
+          label="{{ 'RESOLUTION' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'NOT_SET' | translate }}"
+          readonly
+          value="{{ item.resolution ? (item.resolution | translate) : '' }}"
+        ></ion-input>
+      </ion-item>
+
+      <!-- LABELS -->
+      <ion-item *ngIf="allowEdit">
+        <ion-input
+          label="{{ 'LABELS' | translate }}"
+          labelPlacement="start"
+          type="text"
+          placeholder="{{ 'LABELS' | translate }}"
+          maxlength="1000"
+          (ngModelChange)="processLabelInput($event)"
+          [(ngModel)]="labelInput"
+        ></ion-input>
+        <ion-chip *ngFor="let chip of labels" class="item-labels">{{chip}}</ion-chip>
+      </ion-item>
+
+      <ion-item *ngIf="!allowEdit">
+        <ion-label>
+          {{ 'LABELS' | translate }}
+          <div class="labels-non-editable-item">
+            <ion-chip *ngFor="let chip of labels" class="item-labels">{{chip}}</ion-chip>
+          </div>
+        </ion-label>
+      </ion-item>
+
+      <!-- ACTIVITY LOGGING -->
+      <div class="hour-logging" *ngIf="project?.settings?.enable_hour_tracking && !item.deleted">
+        <h2 class="log-activity-title">
+          {{ 'LOG_ACTIVITY' | translate }}
+        </h2>
+        <ion-item>
+          <ion-input
+            placeholder="{{ 'HOURS_WORKED' | translate }}"
+            type="number"
+            min="0"
+            max="10000"
+            [(ngModel)]="hoursLogged"
+          ></ion-input>
+          <ion-icon
+            name="paper-plane-outline"
+            fill="solid"
+            slot="end"
+            (click)="onLogHoursClick()">
+          </ion-icon>
+        </ion-item>
+      </div>
+
+      <!-- DELETE ITEM -->
+      <ion-item *ngIf="allowEdit">
+        <ion-button
+          color="danger"
+          fill="solid"
+          (click)="onDeleteItemClick()"
+          [textContent]="'DELETE_ITEM' | translate"
+        ></ion-button>
+      </ion-item>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar mobile-only-hide">
+    <!-- TYPE -->
+    <ion-item *ngIf="allowEdit">
+      <ion-select
+        label="{{ 'TYPE' | translate }}"
+        placeholder="{{ 'TYPE' | translate }}"
+        justify="start"
+        [(ngModel)]="item.type"
+      >
+        <ion-select-option
+          *ngFor="let type of itemTypes"
+          [value]="type">
+          {{ type | translate }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'TYPE' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'TYPE' | translate }}"
+        readonly
+        value="{{ item.type | translate }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- PRIORITY -->
+    <ion-item *ngIf="allowEdit">
+      <ion-select
+        label="{{ 'PRIORITY' | translate }}"
+        placeholder="{{ 'PRIORITY' | translate }}"
+        justify="start"
+        [(ngModel)]="item.priority"
+      >
+        <ion-select-option
+          *ngFor="let priorityVal of itemPriorities"
+          [value]="priorityVal">
+          {{ priorityVal | translate }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'PRIORITY' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'PRIORITY' | translate }}"
+        readonly
+        value="{{ item.priority | translate }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- COLUMN -->
+    <ion-item *ngIf="allowEdit">
+      <ion-select
+        label="{{ 'STATUS' | translate }}"
+        placeholder="{{ 'STATUS' | translate }}"
+        justify="start"
+        [(ngModel)]="item.column"
+      >
+        <ion-select-option
+          *ngFor="let column of columns"
+          [value]="column">
+          {{ column }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'STATUS' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'STATUS' | translate }}"
+        readonly
+        value="{{ item.column }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- REPORTER -->
+    <ion-item>
+      <ion-input
+        label="{{ 'REPORTER' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'REPORTER' | translate }}"
+        readonly
+        [disabled]="allowEdit"
+        value="{{ getUserNameAtId(item.reporterId) }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- ASSIGNEE -->
+    <ion-item *ngIf="allowEdit">
+      <ion-select
+        label="{{ 'ASSIGNEE' | translate }}"
+        placeholder="{{ 'UNASSIGNED' | translate }}"
+        justify="start"
+        [(ngModel)]="item.assigneeId"
+      >
+        <ion-select-option value="[UNASSIGNED]">{{ 'UNASSIGNED' | translate }}</ion-select-option>
+        <ng-container *ngFor="let assignee of assignees">
+          <ion-select-option
+            *ngIf="assignee.is_active"
+            [disabled]="!assignee.is_active"
+            [value]="assignee._id">
+            {{ assignee.first_name + ' ' + assignee.last_name }}
+          </ion-select-option>
+          <ion-select-option
+            *ngIf="!assignee.is_active && item.assigneeId === assignee._id"
+            [disabled]="true"
+            [value]="assignee._id">
+            {{ assignee.first_name + ' ' + assignee.last_name }}
+          </ion-select-option>
+        </ng-container>
+        
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'ASSIGNEE' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'UNASSIGNED' | translate }}"
+        readonly
+        value="{{ getUserNameAtId(item.assigneeId) }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- CREATED AT -->
+    <ion-item>
+      <ion-input
+        label="{{ 'CREATED' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'CREATED' | translate }}"
+        readonly
+        [disabled]="allowEdit"
+        matTooltip="{{ moment(item.createdAt).format(Constants.DATE_TIME_FORMAT) }}"
+        matTooltipShowDelay="500"
+        value="{{ moment(item.createdAt).fromNow() }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- UPDATED AT -->
+    <ion-item>
+      <ion-input
+        label="{{ 'UPDATED' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'UPDATED' | translate }}"
+        readonly
+        [disabled]="allowEdit"
+        matTooltip="{{ moment(item.updatedAt).format(Constants.DATE_TIME_FORMAT) }}"
+        matTooltipShowDelay="500"
+        value="{{ moment(item.updatedAt).fromNow() }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- COMPLEXITY -->
+    <ion-item *ngIf="allowEdit">
+      <ion-input
+        label="{{ 'COMPLEXITY' | translate }}"
+        labelPlacement="start"
+        type="number"
+        min="0"
+        max="10000"
+        placeholder="{{ 'COMPLEXITY' | translate }}"
+        [(ngModel)]="item.complexity"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'COMPLEXITY' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'NOT_SET' | translate }}"
+        readonly
+        value="{{item.complexity}}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- ESTIMATE -->
+    <ion-item *ngIf="allowEdit">
+      <ion-input
+        label="{{ 'ESTIMATE' | translate }}"
+        labelPlacement="start"
+        type="number"
+        min="0"
+        max="10000"
+        placeholder="{{ 'ESTIMATE' | translate }}"
+        [(ngModel)]="item.estimate"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'ESTIMATE' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'NOT_SET' | translate }}"
+        readonly
+        value="{{item.estimate}}"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item *ngIf="project?.settings?.enable_hour_tracking">
+      <ion-input
+        label="{{ 'HOURS_LEFT' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'HOURS_LEFT' | translate }}"
+        readonly
+        [disabled]="allowEdit"
+        value="{{ item.hours_left }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- EPIC LINK -->
+    <ion-item *ngIf="allowEdit && item.type !== itemTypesEnum.EPIC">
+      <ion-select
+        label="{{ 'EPIC' | translate }}"
+        placeholder="{{ 'NOT_LINKED' | translate }}"
+        justify="start"
+        [(ngModel)]="item.epicId"
+      >
+        <ion-select-option
+          value="[UNASSIGNED]"
+          *ngIf="!project?.settings?.force_epic_link"
+        >
+          {{ 'NOT_LINKED' | translate }}
+        </ion-select-option>
+        <ion-select-option
+          *ngFor="let epic of selfFilteredEpics"
+          [value]="epic._id">
+          {{ epic.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit && item.type !== itemTypesEnum.EPIC">
+      <ion-input *ngIf="!item.epicId"
+        label="{{ 'EPIC' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'NOT_LINKED' | translate }}"
+        readonly
+      ></ion-input>
+      <ng-container *ngIf="item.epicId">
+        <p class="epic-link-label">{{ 'EPIC' | translate }}</p>
+        <a
+          *ngIf="item.epicId"
+          [routerLink]="['/app/item/' + item.epicId]"
+          (click)="pageLeave.emit()"
+        >
+          <ion-chip *ngIf="item.epicId" class="item-epic">{{ getEpicNameAtId(item.epicId) }}</ion-chip>
+        </a>
+      </ng-container>
+    </ion-item>
+
+    <!-- SPRINT -->
+    <ion-item *ngIf="allowEdit">
+      <ion-select
+        label="{{ 'SPRINT' | translate }}"
+        placeholder="{{ 'BACKLOG' | translate }}"
+        justify="start"
+        [multiple]="project?.settings?.enable_multi_sprint_items"
+        [(ngModel)]="item.sprintId"
+      >
+        <ion-select-option
+          value="[UNASSIGNED]"
+          *ngIf="!project?.settings?.enable_multi_sprint_items"
+        >
+          {{ 'BACKLOG' | translate }}
+        </ion-select-option>
+        <ion-select-option
+          *ngFor="let sprint of sprints"
+          [value]="sprint._id">
+          {{ sprint.name }} <span *ngIf="sprint._id === project?.currentSprintId">({{ 'ACTIVE' | translate }})</span>
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'SPRINT' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'BACKLOG' | translate }}"
+        readonly
+        value="{{ getSprintNameAtId(item.sprintId) }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- RESOLUTION -->
+    <ion-item *ngIf="allowEdit">
+      <ion-select
+        label="{{ 'RESOLUTION' | translate }}"
+        placeholder="{{ 'NOT_SET' | translate }}"
+        justify="start"
+        [(ngModel)]="item.resolution"
+      >
+        <ion-select-option value="[UNASSIGNED]">{{ 'NOT_SET' | translate }}</ion-select-option>
+        <ion-select-option
+          *ngFor="let resolution of itemResolutions"
+          [value]="resolution">
+          {{ resolution | translate }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-input
+        label="{{ 'RESOLUTION' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'NOT_SET' | translate }}"
+        readonly
+        value="{{ item.resolution ? (item.resolution | translate) : '' }}"
+      ></ion-input>
+    </ion-item>
+
+    <!-- LABELS -->
+    <ion-item *ngIf="allowEdit">
+      <ion-input
+        label="{{ 'LABELS' | translate }}"
+        labelPlacement="start"
+        type="text"
+        placeholder="{{ 'LABELS' | translate }}"
+        maxlength="1000"
+        (ngModelChange)="processLabelInput($event)"
+        [(ngModel)]="labelInput"
+      ></ion-input>
+      <ion-chip *ngFor="let chip of labels" class="item-labels">{{chip}}</ion-chip>
+    </ion-item>
+
+    <ion-item *ngIf="!allowEdit">
+      <ion-label>
+        {{ 'LABELS' | translate }}
+        <div class="labels-non-editable-item">
+          <ion-chip *ngFor="let chip of labels" class="item-labels">{{chip}}</ion-chip>
+        </div>
+      </ion-label>
+    </ion-item>
+
+    <!-- ACTIVITY LOGGING -->
+    <div class="hour-logging" *ngIf="project?.settings?.enable_hour_tracking && !item.deleted">
+      <h2 class="log-activity-title">
+        {{ 'LOG_ACTIVITY' | translate }}
+      </h2>
+      <ion-item>
+        <ion-input
+          placeholder="{{ 'HOURS_WORKED' | translate }}"
+          type="number"
+          min="0"
+          max="10000"
+          [(ngModel)]="hoursLogged"
+        ></ion-input>
+        <ion-icon
+          name="paper-plane-outline"
+          fill="solid"
+          slot="end"
+          (click)="onLogHoursClick()">
+        </ion-icon>
+      </ion-item>
+    </div>
+
+    <!-- DELETE ITEM -->
+    <ion-item *ngIf="allowEdit">
+      <ion-button
+        color="danger"
+        fill="solid"
+        (click)="onDeleteItemClick()"
+        [textContent]="'DELETE_ITEM' | translate"
+      ></ion-button>
+    </ion-item>
+  </div>
+</div>
+
+<app-image-viewer-modal
+  [isOpen]="isImageExpanded"
+  [image]="expandedAttachment"
+  (closeModal)="onCloseImageVideoViewer()"
+></app-image-viewer-modal>
+
+<app-video-viewer-modal
+  [isOpen]="isVideoExpanded"
+  [video]="expandedAttachment"
+  (closeModal)="onCloseImageVideoViewer()"
+></app-video-viewer-modal>

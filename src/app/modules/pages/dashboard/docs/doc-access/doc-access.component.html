@@ -1,0 +1,48 @@
+<ion-modal [isOpen]="isAccessOpen" *ngIf="doc" [backdropDismiss]="false">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeDetails()">{{ 'CLOSE' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'MANAGE_ACCESS' | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="saveDetails()">{{ 'SAVE' | translate }}</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="folder-warning" *ngIf="doc.type === 'folder'">
+        <p>{{ 'MANAGE_ACCESS_FOLDER_WARNING' | translate }}</p>
+      </div>
+      <div class="roles">
+        <h2>{{ 'EVERYONE_WITH_ROLE' | translate }}</h2>
+        <ion-list>
+          <ion-item *ngFor="let role of projectRoles">
+            <ion-checkbox
+              (ionChange)="onRoleChange($event)"
+              [value]="role"
+              [checked]="doc.roles?.includes(role)"
+            >
+              {{ role | translate }}
+            </ion-checkbox>
+          </ion-item>
+        </ion-list>
+      </div>
+      <div class="users">
+        <h2>{{ 'USERS' | translate }}</h2>
+        <ion-list>
+          <ion-item *ngFor="let user of projectUsers">
+            <ion-checkbox
+              (ionChange)="onUserChange($event)"
+              [value]="user._id"
+              [checked]="doc.users?.includes(user._id)"
+            >
+              {{user.first_name + ' ' + user.last_name}}
+            </ion-checkbox>
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,21 @@
+<ion-toolbar>
+  <ion-buttons slot="start">
+    <ion-title>{{ 'TASK_VISION' | translate }}</ion-title>
+    <ion-button
+      *ngFor="let item of navbarLeftItems"
+      (click)="goTo(item.link)"
+    >
+      {{ item.translation_code | translate }}
+    </ion-button>
+  </ion-buttons>
+
+  <ion-buttons slot="end" *ngIf="showLogin">
+    <ion-button
+      *ngFor="let item of navbarRightItems"
+      (click)="goTo(item.link)"
+    >
+      <ion-icon [name]="item.icon"></ion-icon>
+      {{ item.translation_code | translate }}
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>

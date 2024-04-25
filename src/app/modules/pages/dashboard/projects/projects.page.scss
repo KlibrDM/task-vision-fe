@@ -1,0 +1,33 @@
+ion-content {
+  background-color: var(--main-bg-color);
+  background: var(--main-bg-gradient);
+}
+
+.projects-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.project-card {
+  cursor: pointer;
+}
+
+.content {
+  ion-card {
+    margin-left: 0;
+    margin-right: 0;
+
+    .project-description {
+      white-space: pre;
+    }
+  }
+
+  ion-card:first-child {
+    margin-top: 0;
+  }
+
+  ion-card:last-child {
+    margin-bottom: 0;
+  }
+}

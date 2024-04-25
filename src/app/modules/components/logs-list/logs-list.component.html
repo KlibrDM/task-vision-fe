@@ -1,0 +1,101 @@
+<ion-list>
+  <ion-item *ngFor="let log of logs">
+    <div class="item">
+      <div class="left-side">
+        <div class="log-type-icon">
+          <app-item-property-icon [property]="log.action" [inverse]="true"></app-item-property-icon>
+        </div>
+
+        <div class="log-type" *ngIf="!isProjectLogs">
+          {{ log.action | translate }}
+        </div>
+        <div class="log-type" *ngIf="isProjectLogs">
+          {{ log.action | translate }} {{ log.affectedEntity | translate }}&nbsp;
+        </div>
+
+        <div class="log-entity-name" *ngIf="isProjectLogs && log.affectedEntityName">
+          {{ log.affectedEntityName }}
+        </div>
+
+        <div 
+          class="divider"
+          *ngIf="![
+            LogAction.CREATE,
+            LogAction.DELETE,
+            LogAction.LOGIN,
+            LogAction.LOGOUT
+          ].includes(log.action)"
+        ></div>
+
+        <!-- FOR STRINGS -->
+        <ng-container *ngIf="!log.newValueArray && !log.oldValueArray">
+          <!-- UPDATE -->
+          <div class="log-description" *ngIf="log.action === LogAction.UPDATE">
+            <span *ngIf="log.changedField">{{ log.changedField.toUpperCase() | translate }}: </span>
+            {{ getNameFromEntityList(log.oldValue) }}
+            <span> > </span>
+            {{ getNameFromEntityList(log.newValue) }}
+          </div>
+
+          <!-- PUSH AND PULL -->
+          <div class="log-description" *ngIf="[LogAction.PUSHED, LogAction.PULLED].includes(log.action)">
+            <span *ngIf="log.changedField">{{ log.changedField.toUpperCase() | translate }}: </span>
+            {{ log.action === LogAction.PUSHED ? getNameFromEntityList(log.newValue) : getNameFromEntityList(log.oldValue) }}
+          </div>
+        </ng-container>
+
+        <!-- FOR ARRAYS -->
+        <ng-container *ngIf="log.newValueArray || log.oldValueArray">
+          <!-- UPDATE -->
+          <div class="array-log-description" *ngIf="log.action === LogAction.UPDATE">
+            <span *ngIf="log.changedField">{{ log.changedField.toUpperCase() | translate }}: </span>
+            <div class="changed-values-array">
+              <div *ngFor="let value of log.oldValueArray">
+                {{ beautifyFieldName(value[0]) + ': ' + getNameFromEntityList(value[1]) }}
+              </div>
+            </div>
+            <span> > </span>
+            <div class="changed-values-array">
+              <div *ngFor="let value of log.newValueArray">
+                {{ beautifyFieldName(value[0]) + ': ' + getNameFromEntityList(value[1]) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- PUSH AND PULL -->
+          <div class="array-log-description" *ngIf="[LogAction.PUSHED, LogAction.PULLED].includes(log.action)">
+            <span *ngIf="log.changedField">{{ log.changedField.toUpperCase() | translate }}: </span>
+            <div class="changed-values-array" *ngIf="log.action === LogAction.PULLED">
+              <div *ngFor="let value of log.oldValueArray">
+                {{ beautifyFieldName(value[0]) + ': ' + getNameFromEntityList(value[1]) }}
+              </div>
+            </div>
+            <div class="changed-values-array" *ngIf="log.action === LogAction.PUSHED">
+              <div *ngFor="let value of log.newValueArray">
+                {{ beautifyFieldName(value[0]) + ': ' + getNameFromEntityList(value[1]) }}
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="right-side">
+        <div class="log-trigger" *ngIf="log.logTriggerId">
+          {{getUserName(log.logTriggerId)}}
+        </div>
+        <div class="log-trigger" *ngIf="!log.logTriggerId && log.logTrigger === LogTrigger.SYSTEM">
+          {{ 'SYSTEM' | translate }}
+        </div>
+        <div class="log-date">
+          {{ log.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+    </div>
+  </ion-item>
+
+  <ion-item *ngIf="logs?.length === 0">
+    <div class="no-logs">
+      {{ 'NO_LOGS_FOUND' | translate }}
+    </div>
+  </ion-item>
+</ion-list>

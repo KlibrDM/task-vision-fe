@@ -1,0 +1,109 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'MANAGE_MEMBERS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="profile">
+      <div class="content" *ngIf="project && user">
+        <!-- Header -->
+        <div class="project-settings-header">
+          <app-general-header
+            name="{{ 'MANAGE_MEMBERS' | translate }}"
+          ></app-general-header>
+        </div>
+
+        <div class="user-cards">
+          <!-- ADD USER CARD -->
+          <ion-card class="add-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'ADD_USER' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <form (ngSubmit)="onAddEmail()">
+                <ion-item>
+                  <ion-input
+                    label="{{ 'EMAIL' | translate }}"
+                    labelPlacement="start"
+                    type="email"
+                    maxlength="120"
+                    required
+                    name="email"
+                    [(ngModel)]="email"
+                  ></ion-input>
+
+                  <ion-button class="add-button" slot="end" size="medium" (click)="onAddEmail()">
+                    {{ 'ADD' | translate }}
+                  </ion-button>
+                </ion-item>
+
+                <input type="submit" class="submit-enter" />
+              </form>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- MEMBERS CARD -->
+          <ion-card class="members-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'MEMBERS' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ng-container *ngFor="let projectUser of projectUsers">
+                <ion-item *ngIf="projectUser.is_active">
+                  <span class="member-name">
+                    {{ projectUser.first_name + ' ' + projectUser.last_name }}
+                    <span class="member-email">{{ projectUser.email }}</span>
+                  </span>
+
+                  <div class="member-actions" slot="end">
+                    <ion-select
+                      *ngIf="project.ownerId !== projectUser._id"
+                      class="role-select"
+                      [(ngModel)]="projectUser.role"
+                      (ngModelChange)="onRoleChange($event, projectUser._id)"
+                    >
+                      <ion-select-option
+                        *ngFor="let role of projectRoles"
+                        [value]="role"
+                        [disabled]="(role === projectRolesEnum.ADMIN && currentUserRole === projectRolesEnum.BOARDMASTER)
+                          || currentUserRole === projectRolesEnum.MEMBER
+                          || currentUserRole === projectRolesEnum.QA"
+                      >
+                        {{ role | translate }}
+                      </ion-select-option>
+                    </ion-select>
+
+                    <span class="member-owner-label" *ngIf="project.ownerId === projectUser._id">
+                      {{ 'OWNER' | translate }}
+                    </span>
+
+                    <ion-button
+                      *ngIf="user._id !== projectUser._id && project.ownerId !== projectUser._id"
+                      fill="clear"
+                      color="danger"
+                      (click)="onRemoveUser(projectUser._id)"
+                    >
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>
+              </ng-container>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

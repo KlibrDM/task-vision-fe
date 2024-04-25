@@ -1,0 +1,20 @@
+div {
+  min-width: 20px;
+  height: 20px;
+  padding: 0px 5px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.complexity-color {
+  background-color: var(--item-complexity-bg-color);
+}
+
+.estimate-color {
+  background-color: var(--item-estimate-bg-color);
+}
+
+.estimate-danger-color {
+  background-color: var(--item-estimate-danger-bg-color);
+}

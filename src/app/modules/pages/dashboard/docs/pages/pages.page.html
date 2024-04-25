@@ -1,0 +1,98 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'PAGES' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="content" *ngIf="doc">
+      <div class="document-header">
+        <div class="document-name">
+          <ion-input
+            *ngIf="allowEdit"
+            label="{{ 'PAGE_NAME' | translate }}"
+            labelPlacement="floating"
+            type="text"
+            [(ngModel)]="docNameInput"
+            [readonly]="!allowEdit"
+          ></ion-input>
+          <h1 class="document-name-text" *ngIf="!allowEdit">{{ doc.name }}</h1>
+          <ion-button
+            *ngIf="allowEdit"
+            (click)="onDiscardClick()"
+          >
+            {{ 'DISCARD' | translate }}
+          </ion-button>
+          <ion-button
+            *ngIf="allowEdit"
+            (click)="onSaveClick()"
+            color="success"
+          >
+            {{ 'SAVE' | translate }}
+          </ion-button>
+          <ion-button
+            *ngIf="!allowEdit && (doc.edit_users?.includes(user?._id ?? '') || (userRole && doc.edit_roles?.includes(userRole)))"
+            (click)="onEditClick()"
+            [disabled]="editedBy"
+          >
+            {{ 'EDIT' | translate }}
+          </ion-button>
+        </div>
+        <div class="document-info">
+          <div class="document-info-active-users">
+            <p>
+              {{
+                activeUsers.length === 1
+                  ? ('X_ACTIVE_USER' | translate: {count: 1})
+                  : ('X_ACTIVE_USERS' | translate: {count: activeUsers.length})
+              }}
+            </p>
+            <p
+              class="document-info-active-users-link"
+              (click)="onSeeActiveUsersClick()"
+            >
+              {{ 'SEE_USERS' | translate }}
+            </p>
+          </div>
+          <div class="document-info-is-edited" *ngIf="editedBy">
+            <p>
+              {{ 'X_IS_CURRENTLY_EDITING_THIS_PAGE' | translate: {name: getUserNameAtId(editedBy)} }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="document-edit" *ngIf="allowEdit">
+        <div class="document-edit-textarea-container">
+          <p>{{ 'EDIT_MARKDOWN_ENABLED' | translate }}</p>
+          <ion-textarea
+            #documentContent
+            type="text"
+            autoGrow
+            maxlength="30000"
+            lines="none"
+            fill="outline"
+            class="document-edit-textarea"
+            placeholder="{{ 'START_WRITING_HERE' | translate }}"
+            [(ngModel)]="docContentInput"
+            (ngModelChange)="onContentChange($event)"
+          ></ion-textarea>
+        </div>
+
+        <div class="document-edit-divider"></div>
+
+        <div class="document-edit-md-container">
+          <p class="document-edit-md-hint">{{ 'PREVIEW' | translate }}</p>
+          <div class="document-edit-md markdown-text" [innerHTML]="docContentMD"></div>
+        </div>
+      </div>
+
+      <div class="document-md markdown-text" *ngIf="!allowEdit" [innerHTML]="docContentMD"></div>
+    </div>
+  </div>
+</ion-content>

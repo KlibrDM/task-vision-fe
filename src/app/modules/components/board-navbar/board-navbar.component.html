@@ -1,0 +1,23 @@
+<ion-toolbar>
+  <ion-buttons slot="start">
+    <ion-button
+      *ngFor="let item of navbarLeftItems"
+      (click)="item.action()"
+    >
+      <span *ngIf="item.translation_code">{{ item.translation_code | translate }}</span>
+    </ion-button>
+  </ion-buttons>
+
+  <ion-buttons slot="end">
+    <ion-button
+      *ngFor="let item of navbarRightItems"
+      (click)="item.action()"
+    >
+      <ion-icon
+        [name]="item.icon"
+        [slot]="!item.translation_code ? 'icon-only' : 'start'"
+      ></ion-icon>
+      <span *ngIf="item.translation_code">{{ item.translation_code | translate }}</span>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>

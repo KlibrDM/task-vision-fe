@@ -1,0 +1,56 @@
+<ion-modal #itemDetailsModal [isOpen]="isOpen" [backdropDismiss]="false">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>
+          <a [routerLink]="['/app/item/' + item?._id]" (click)="onPageLeave()" class="title-link">
+            {{ 
+              item?.deleted
+                ? ( ('DELETED' | translate) + ' (' + item?.code + ')' ) 
+                : item?.code
+            }}
+          </a>
+          <span class="go-to-page-link">
+            <a [routerLink]="['/app/item/' + item?._id]" (click)="onPageLeave()">
+              {{ 'GO_TO_PAGE' | translate }}
+            </a>
+          </span>
+        </ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="onDiscardChangesClick()" *ngIf="allowEdit">
+            {{ 'DISCARD_CHANGES' | translate }}
+          </ion-button>
+          <ion-button (click)="onSaveChangesClick()" *ngIf="allowEdit">
+            {{ 'SAVE_CHANGES' | translate }}
+          </ion-button>
+
+          <ion-button (click)="onAllowEditClick()" *ngIf="!allowEdit && !item?.deleted">
+            {{ 'EDIT' | translate }}
+          </ion-button>
+          <ion-button (click)="cancel()" *ngIf="!allowEdit">
+            <ion-icon slot="icon-only" name="close-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding" *ngIf="item">
+      <app-item-details-content
+        [allowEdit]="allowEdit"
+        [item]="item"
+        [items]="items"
+        [user]="user"
+        [project]="project"
+        [assignees]="assignees"
+        [epics]="epics"
+        [sprints]="sprints"
+        [allowEditClicked]="allowEditClicked.asObservable()"
+        [discardClicked]="discardClicked.asObservable()"
+        [saveClicked]="saveClicked.asObservable()"
+        (itemChanged)="onItemChanged($event)"
+        (itemDeleted)="onItemDeleted()"
+        (pageLeave)="onPageLeave()"
+      ></app-item-details-content>
+    </ion-content>
+  </ng-template>
+</ion-modal>

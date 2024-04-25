@@ -1,0 +1,376 @@
+<ion-modal [isOpen]="isOpen" [backdropDismiss]="false">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="cancel()">{{ 'CANCEL' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title class="ion-text-center">{{ 'CREATE_ITEM' | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="confirm()" [strong]="true">{{ 'CREATE' | translate }}</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <ion-item>
+        <ion-select
+          label="{{ 'TYPE' | translate }}"
+          placeholder="{{ 'TYPE' | translate }}"
+          justify="start"
+          [(ngModel)]="type"
+        >
+          <ion-select-option
+            *ngFor="let type of itemTypes"
+            [value]="type">
+            {{ type | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="{{ 'NAME' | translate }}"
+          labelPlacement="floating"
+          type="text"
+          placeholder="{{ 'NAME' | translate }}"
+          required
+          maxlength="200"
+          [(ngModel)]="name"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label
+          position="stacked"
+          id="description-label"
+          name="description-label"
+        >
+          {{ 'DESCRIPTION' | translate }}
+        </ion-label>
+        <div class="description-edit-area">
+          <div class="description-view-switches">
+            <div
+              class="description-view-switch"
+              [class.description-view-switch-active]="seeRawDescription"
+              (click)="setDescriptionView('raw')"
+            >
+              {{ 'EDIT' | translate }}
+            </div>
+            <div
+              class="description-view-switch"
+              [class.description-view-switch-active]="!seeRawDescription"
+              (click)="setDescriptionView('md')"
+            >
+              {{ 'PREVIEW' | translate }}
+            </div>
+          </div>
+  
+          <!-- MARKDOWN -->
+          <div
+            *ngIf="!seeRawDescription"
+            class="description-markdown markdown-text"
+            [innerHTML]="descriptionMD"
+          ></div>
+  
+          <!-- TEXTAREA -->
+          <ion-textarea
+            *ngIf="seeRawDescription"
+            aria-labelledby="description-label"
+            type="text"
+            autoGrow
+            placeholder="{{ 'DESCRIPTION' | translate }}"
+            maxlength="30000"
+            helperText="{{ 'MARKDOWN_IS_SUPPORTED' | translate }}"
+            [(ngModel)]="description"
+          ></ion-textarea>
+        </div>
+      </ion-item>
+
+      <ion-item *ngIf="!aiSummary">
+        <ion-label class="generate-ai-summary-label">
+          {{ 'AI_SUMMARY' | translate}}
+        </ion-label>
+        <ion-button
+          *ngIf="!isAISummaryGenerating"
+          fill="solid"
+          color="primary"
+          (click)="onGenerateAISummary()"
+          [disabled]="!name || !description"
+        >
+          <ion-icon name="sparkles-outline"></ion-icon>
+          &nbsp;
+          {{ 'GENERATE_AI_SUMMARY' | translate }}
+        </ion-button>
+        <ion-spinner
+          *ngIf="isAISummaryGenerating"
+        ></ion-spinner>
+      </ion-item>
+
+      <ion-item *ngIf="aiSummary">
+        <ion-textarea
+          label="{{ 'AI_SUMMARY' | translate }}"
+          labelPlacement="floating"
+          type="text"
+          autoGrow
+          placeholder="{{ 'AI_SUMMARY' | translate }}"
+          maxLength="10000"
+          [(ngModel)]="aiSummary"
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <form class="attachments-form">
+          <div class="attachments-row">
+            <ion-label class="attachments-label">
+              {{ 'ATTACHMENTS' | translate}}
+            </ion-label>
+            <label for="item-create-file-upload" class="item-create-file-upload">
+              <span class="file-title">{{ 'UPLOAD_FILES' | translate }}</span>
+            </label>
+            <input
+              id="item-create-file-upload"
+              type="file"
+              multiple
+              #fileInput
+              (change)="onFileSelected($event)"
+            />
+          </div>
+          <div class="attachments-list" *ngIf="selectedFiles.length">
+            <div class="attachments-item" *ngFor="let file of selectedFiles">
+              <span>{{ file.name }}</span>
+              <ion-icon
+                class="attachment-delete"
+                name="close-outline"
+                color="danger"
+                (click)="onFileRemoved(file)"
+              ></ion-icon>
+            </div>
+          </div>
+        </form>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="{{ 'COMPLEXITY' | translate }}"
+          labelPlacement="floating"
+          type="number"
+          min="0"
+          max="10000"
+          placeholder="{{ 'COMPLEXITY' | translate }}"
+          [(ngModel)]="complexity"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="{{ 'ESTIMATE' | translate }}"
+          labelPlacement="floating"
+          type="number"
+          min="0"
+          max="10000"
+          placeholder="{{ 'ESTIMATE' | translate }}"
+          [(ngModel)]="estimate"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="{{ 'PRIORITY' | translate }}"
+          placeholder="{{ 'PRIORITY' | translate }}"
+          justify="start"
+          [(ngModel)]="priority"
+        >
+          <ion-select-option
+            *ngFor="let priorityVal of itemPriorities"
+            [value]="priorityVal">
+            {{ priorityVal | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="{{ 'ASSIGNEE' | translate }}"
+          placeholder="{{ 'UNASSIGNED' | translate }}"
+          justify="start"
+          [(ngModel)]="assigneeId"
+        >
+          <ion-select-option [value]="'[UNASSIGNED]'">{{ 'UNASSIGNED' | translate }}</ion-select-option>
+          <ng-container *ngFor="let assignee of assignees">
+            <ion-select-option
+              *ngIf="assignee.is_active"
+              [disabled]="!assignee.is_active"
+              [value]="assignee._id">
+              {{ assignee.first_name + ' ' + assignee.last_name }}
+            </ion-select-option>
+          </ng-container>
+        </ion-select>
+      </ion-item>
+
+      <ion-item *ngIf="type !== itemTypesEnum.EPIC">
+        <ion-select
+          label="{{ 'EPIC' | translate }}"
+          placeholder="{{ 'NOT_LINKED' | translate }}"
+          justify="start"
+          [(ngModel)]="epicId"
+        >
+          <ion-select-option
+            value="[UNASSIGNED]"
+            *ngIf="!project?.settings?.force_epic_link"
+          >
+            {{ 'NOT_LINKED' | translate }}
+          </ion-select-option>
+          <ion-select-option
+            *ngFor="let epic of epics"
+            [value]="epic._id">
+            {{ epic.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="{{ 'SPRINT' | translate }}"
+          placeholder="{{ 'BACKLOG' | translate }}"
+          justify="start"
+          [multiple]="project?.settings?.enable_multi_sprint_items"
+          [(ngModel)]="sprintId"
+        >
+          <ion-select-option
+            [value]="'[UNASSIGNED]'"
+            *ngIf="!project?.settings?.enable_multi_sprint_items"
+          >
+            {{ 'BACKLOG' | translate }}
+          </ion-select-option>
+          <ion-select-option
+            *ngFor="let sprint of sprints"
+            [value]="sprint._id">
+            {{ sprint.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="{{ 'LABELS' | translate }}"
+          labelPlacement="floating"
+          type="text"
+          placeholder="{{ 'LABELS' | translate }}"
+          maxLength="1000"
+          (ngModelChange)="processLabelInput($event)"
+          [(ngModel)]="labelInput"
+        ></ion-input>
+        <ion-chip *ngFor="let chip of labels" class="item-labels">{{chip}}</ion-chip>
+      </ion-item>
+
+      <!-- RELATIONS -->
+      <div class="relations">
+        <h2 class="relations-title">
+          {{ 'RELATIONS' | translate }}
+        </h2>
+
+        <div class="relations-section">
+          <div
+            *ngFor="let relation of relations"
+            class="relation"
+          >
+            <div class="relation-type">
+              {{ (relation.type | translate) + "&nbsp;" }}
+            </div>
+            <a>
+              {{ getItemNameAtId(relation.itemId) }}
+            </a>
+            <ion-icon
+              class="relation-delete"
+              name="close-outline"
+              color="danger"
+              (click)="onDeleteRelationClick(relation)"
+            ></ion-icon>
+          </div>
+        </div>
+
+        <div
+          *ngIf="newRelation"
+          class="new-relation"
+        >
+          <h2 class="new-relation-title">
+            {{ 'NEW_RELATION' | translate }}
+          </h2>
+
+          <div class="new-relation-item">
+            <ion-item class="new-relation-item-type">
+              <ion-select
+                label="{{ 'RELATION_TYPE' | translate }}"
+                placeholder="{{ 'RELATION_TYPE' | translate }}"
+                labelPlacement="floating"
+                justify="start"
+                [(ngModel)]="newRelation.type"
+              >
+                <ion-select-option
+                  *ngFor="let relation of itemRelations"
+                  [value]="relation">
+                  {{ relation | translate }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item class="new-relation-item-name">
+              <ion-input
+                label="{{ 'RELATION_ITEM' | translate }}"
+                labelPlacement="stacked"
+                type="text"
+                placeholder="{{ 'SEARCH_FOR_ITEM' | translate }}"
+                readonly
+                value="{{ newRelationItemName }}"
+              ></ion-input>
+            </ion-item>
+          </div>
+          
+          <ion-item class="new-relation-search">
+            <ion-input
+              label="{{ 'SEARCH_ITEM' | translate }}"
+              labelPlacement="floating"
+              type="text"
+              placeholder="{{ 'SEARCH_ITEM' | translate }}"
+              [(ngModel)]="newRelationSearch"
+              (ngModelChange)="onNewRelationSearchChange()"
+            ></ion-input>
+          </ion-item>
+
+          <ion-list class="new-relation-search-list">
+            <ion-item
+              *ngFor="let item of relationSearchResults"
+              (click)="onNewRelationSearchItemClick(item)"
+            >
+              {{ item.code + ' - ' + item.name }}
+            </ion-item>
+          </ion-list>
+
+          <div class="new-relation-button-group">
+            <ion-button
+              fill="solid"
+              [disabled]="!newRelation.itemId || !newRelation.type"
+              (click)="onSaveRelationClick()"
+              [textContent]="'ADD_RELATION' | translate"
+            ></ion-button>
+            <ion-button
+              fill="solid"
+              color="danger"
+              (click)="onCancelNewRelationClick()"
+              [textContent]="'CANCEL' | translate"
+            ></ion-button>
+          </div>
+        </div>
+
+        <ion-button
+          *ngIf="!newRelation"
+          class="new-relation-button"
+          fill="solid"
+          (click)="onAddRelationClick()"
+          [textContent]="'NEW_RELATION' | translate"
+        ></ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

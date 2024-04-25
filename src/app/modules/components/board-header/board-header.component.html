@@ -1,0 +1,34 @@
+<div class="board-header">
+  <p *ngIf="projectName" class="project-name">
+    <ng-container *ngIf="parent === 'board'">
+      {{ 'PROJECT_BOARD' | translate: { project: projectName } }}
+    </ng-container>
+    <ng-container *ngIf="parent === 'backlog'">
+      {{ 'PROJECT_BACKLOG' | translate: { project: projectName } }}
+    </ng-container>
+    <ng-container *ngIf="!parent">
+      {{ projectName }}
+    </ng-container>
+  </p>
+  <div class="actions">
+    <ion-toggle
+      class="only-mine-toggle"
+      [(ngModel)]="showOnlyMineState"
+      (click)="onOnlyMineClicked()"
+    >
+      {{ 'ONLY_MINE' | translate }}
+    </ion-toggle>
+    <ion-button
+      class="filters-button"
+      (click)="onFiltersClicked()"
+    >
+      {{ 'FILTERS' | translate }}
+    </ion-button>
+    <ion-button
+      class="create-item-button"
+      (click)="onCreateItemClicked()"
+    >
+      {{ 'CREATE_ITEM' | translate }}
+    </ion-button>
+  </div>
+</div>

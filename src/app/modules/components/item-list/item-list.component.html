@@ -1,0 +1,54 @@
+<ion-list>
+  <div class="list-header">
+    <div *ngIf="!items?.length" class="items-count">
+      {{ 'NO_ITEMS' | translate }}
+    </div>
+    <div *ngIf="items?.length" class="items-count">
+      {{ 'X_ITEMS' | translate: {count: items?.length} }}
+    </div>
+    <div *ngIf="items?.length" class="items-estimates">
+      <div *ngIf="totalComplexity">
+        {{ 'COMPLEXITY_X' | translate: { complexity: totalComplexity } }}
+      </div>
+      <div *ngIf="totalComplexity && totalHoursLeft" class="divider estimates-divider"></div>
+      <div *ngIf="totalHoursLeft">
+        {{ 'WORK_LEFT_X_HOURS' | translate: { hours: totalHoursLeft } }}
+      </div>
+    </div>
+  </div>
+  <ion-item *ngFor="let item of items" (click)="onItemClick(item._id)">
+    <div class="item">
+      <div class="left-side">
+        <div class="item-code">
+          {{item.code}}
+        </div>
+        <div class="divider"></div>
+        <div class="item-name">
+          {{item.name}}
+        </div>
+      </div>
+
+      <div class="right-side">
+        <div class="item-assignee" *ngIf="item.assigneeId">
+          {{getAssigneeName(item.assigneeId)}}
+        </div>
+        <app-item-estimate-badge
+          *ngIf="item.complexity !== undefined"
+          [estimate]="item.complexity"
+          [type]="'complexity'">
+        </app-item-estimate-badge>
+        <app-item-estimate-badge
+          *ngIf="item.hours_left !== undefined"
+          [estimate]="item.hours_left"
+          [type]="'estimate'">
+        </app-item-estimate-badge>
+        <div class="item-priority">
+          <app-item-property-icon [property]="item.priority" [inverse]="true"></app-item-property-icon>
+        </div>
+        <div class="item-type">
+          <app-item-property-icon [property]="item.type" [inverse]="true"></app-item-property-icon>
+        </div>
+      </div>
+    </div>
+  </ion-item>
+</ion-list>

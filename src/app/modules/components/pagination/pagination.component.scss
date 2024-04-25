@@ -1,0 +1,16 @@
+.container{
+  display: flex;
+
+  div {
+    margin: 0 5px;
+    padding: 4px 8px;
+    background-color: var(--ion-item-background);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .active {
+    background-color: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+}

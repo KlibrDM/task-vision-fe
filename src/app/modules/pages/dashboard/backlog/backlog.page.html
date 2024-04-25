@@ -1,0 +1,160 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'BACKLOG' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="backlog">
+      <div class="content">
+        <!-- Backlog Header -->
+        <div class="backlog-header" *ngIf="project">
+          <app-board-header
+            parent="backlog"
+            [projectName]="project.name"
+            (onlyMineClick)="onShowOnlyMineToggle($event)"
+            (filtersClick)="onFiltersClick()"
+            (createItemClick)="onCreateItemClick()"
+          >
+          </app-board-header>
+        </div>
+
+        <!-- Backlog Content -->
+        <div class="backlog-container">
+          <div class="backlog-view-segments">
+            <ion-segment
+              scrollable
+              [value]="selectedViewSegment"
+              (ionChange)="onSelectedViewChange($event)"
+            >
+              <!-- ngFor buttons not highlighting okay, therefore all the buttons added manually -->
+              <ion-segment-button value="backlog">
+                <ion-label>{{ 'BACKLOG' | translate }}</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="active_sprint">
+                <ion-label>{{ 'ACTIVE_SPRINT' | translate }}</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="epics">
+                <ion-label>{{ 'EPICS' | translate }}</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="requirements">
+                <ion-label>{{ 'REQUIREMENTS' | translate }}</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="bugs">
+                <ion-label>{{ 'BUGS' | translate }}</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="tests">
+                <ion-label>{{ 'TESTS' | translate }}</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="sprints">
+                <ion-label>{{ 'ALL_SPRINTS' | translate }}</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+
+          <div class="backlog-content" *ngIf="selectedView">
+            <ng-container *ngIf="selectedView.type === 'default'">
+              <ng-container
+                *ngIf="selectedView.code === 'active_sprint'
+                && selectedView.sprints
+                && project?.currentSprintId"
+              >
+                <div class="sprint-details" >
+                  <div class="sprint-title">
+                    <p>{{selectedView.sprints[0].sprint.name}}</p>
+                  </div>
+                  <div class="sprint-description" *ngIf="selectedView.sprints[0].sprint.description">
+                    <p>{{selectedView.sprints[0].sprint.description}}</p>
+                  </div>
+                </div>
+                <app-item-list
+                  [items]="selectedView.sprints[0].items"
+                  [projectUsers]="projectUsers"
+                  (itemClicked)="onItemClicked($event)">
+                </app-item-list>
+              </ng-container>
+
+              <ng-container
+                *ngIf="selectedView.code === 'active_sprint'
+                && selectedView.sprints
+                && !project?.currentSprintId"
+              >
+                <div class="no-active-sprint">
+                  <h2>{{ 'NO_ACTIVE_SPRINT' | translate }}</h2>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="selectedView.code !== 'active_sprint'">
+                <div class="section-title">
+                  <p>{{selectedView.name}}</p>
+                </div>
+                <app-item-list
+                  [items]="selectedView.items"
+                  [projectUsers]="projectUsers"
+                  (itemClicked)="onItemClicked($event)">
+                </app-item-list>
+              </ng-container>
+            </ng-container>
+
+            <ng-container *ngIf="selectedView.type === 'sprints'">
+              <div class="backlog-sprint-container">
+                <div
+                  *ngFor="let sprintView of selectedView.sprints"
+                  class="backlog-sprint-view"
+                >
+                  <div class="sprint-title">
+                    <p *ngIf="!sprintView.sprint.deleted">{{sprintView.sprint.name}}</p>
+                    <p *ngIf="sprintView.sprint.deleted">
+                      {{ 'DELETED_SPRINT' | translate }}
+                      <small>({{sprintView.sprint.name}})</small>
+                    </p>
+                  </div>
+                  <div class="sprint-description" *ngIf="sprintView.sprint.description">
+                    <p>{{sprintView.sprint.description}}</p>
+                  </div>
+                  <app-item-list
+                    [items]="sprintView.items"
+                    [projectUsers]="projectUsers"
+                    (itemClicked)="onItemClicked($event)">
+                  </app-item-list>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Item Create Modal -->
+  <app-item-create-modal
+    [isOpen]="isCreateModalOpen"
+    [user]="user"
+    [items]="items"
+    [project]="project"
+    [assignees]="projectUsers ?? []"
+    [epics]="epics ?? []"
+    [sprints]="sprints ?? []"
+    (closeModal)="onCreateModalClose()"
+    (confirmModal)="onCreateModalConfirm($event)">
+  </app-item-create-modal>
+
+  <!-- Item Details Modal -->
+  <app-item-details-modal
+    [isOpen]="isDetailsModalOpen"
+    [item]="selectedItem"
+    [items]="items"
+    [user]="user"
+    [project]="project"
+    [assignees]="projectUsers ?? []"
+    [epics]="epics ?? []"
+    [sprints]="sprints ?? []"
+    (closeModal)="onDetailsModalClose()"
+    (itemChanged)="onItemChanged($event)">
+  </app-item-details-modal>
+</ion-content>

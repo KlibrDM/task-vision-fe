@@ -1,0 +1,52 @@
+<div>
+  <p>{{ 'BURNUP_CHART_LONG_DESCRIPTION' | translate }}</p>
+  <div class="options">
+    <div class="sprint-select">
+      <ion-item>
+        <ion-select
+          label="{{ 'SPRINT' | translate }}"
+          [(ngModel)]="selectedSprintId"
+          (ngModelChange)="onSprintChange($event)"
+        >
+          <ion-select-option
+            *ngFor="let sprint of sprints"
+            [value]="sprint._id"
+          >
+            {{ sprint.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+    <div class="measure-select">
+      <ion-item>
+        <ion-select
+          label="{{ 'MEASURE' | translate }}"
+          [(ngModel)]="selectedMeasure"
+          (ngModelChange)="onMeasureChange($event)"
+        >
+          <ion-select-option value="complexity">
+            {{ 'COMPLEXITY' | translate }}
+          </ion-select-option>
+          <ion-select-option value="hours">
+            {{ 'HOURS' | translate }}
+          </ion-select-option>
+          <ion-select-option value="item_count">
+            {{ 'ITEM_COUNT' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+    <div class="weekend-checkbox">
+      <ion-item>
+        <ion-checkbox
+          justify="start"
+          [(ngModel)]="showWeekends"
+          (ngModelChange)="onShowWeekendsChange($event)"
+        >
+          {{ 'SHOW_NON_WORKING_DAYS' | translate }}
+        </ion-checkbox>
+      </ion-item>
+    </div>
+  </div>
+  <canvas id="canvas">{{chart}}</canvas>
+</div>

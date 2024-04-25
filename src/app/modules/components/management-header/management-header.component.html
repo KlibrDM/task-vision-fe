@@ -1,0 +1,21 @@
+<div class="management-header">
+  <p *ngIf="projectName" class="project-name">
+    <ng-container *ngIf="parent === 'sprint-planner'">
+      {{ 'SPRINT_PLANNER' | translate: { project: projectName } }}
+    </ng-container>
+    <ng-container *ngIf="parent === 'manage-members'">
+      {{ 'MANAGE_MEMBERS' | translate: { project: projectName } }}
+    </ng-container>
+    <ng-container *ngIf="!parent">
+      {{ projectName }}
+    </ng-container>
+  </p>
+  <div class="actions">
+    <ion-button
+      class="add-item-button"
+      (click)="onAddItemClicked()"
+    >
+      {{ addItemText }}
+    </ion-button>
+  </div>
+</div>

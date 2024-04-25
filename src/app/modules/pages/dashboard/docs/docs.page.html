@@ -1,0 +1,342 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'DOCS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="docs">
+      <div class="uploaded-docs">
+        <div class="docs-header">
+          <div class="docs-header-segments">
+            <div
+              class="docs-header-title"
+              [class.active-header]="selectedSection === 'uploaded'"
+              (click)="onUploadedDocsClick()"
+            >
+              {{ 'DOCUMENTS' | translate }}
+            </div>
+
+            <div
+              class="docs-header-title"
+              [class.active-header]="selectedSection === 'collab'"
+              (click)="onCollabDocsClick()"
+            >
+              {{ 'COLLAB_DOCUMENTS' | translate }}
+            </div>
+          </div>
+
+          <div class="docs-header-buttons">
+            <ion-button
+              *ngIf="project && path !== project.name && !path?.startsWith(project.name + '/')"
+              class="new-folder"
+              fill="solid"
+              color="primary"
+              (click)="onNewFolderClick()"
+            >
+              {{ 'NEW_FOLDER' | translate }}
+            </ion-button>
+            <ion-button
+              *ngIf="project && selectedSection === 'collab'"
+              class="new-document"
+              fill="solid"
+              color="primary"
+              (click)="onNewDocumentClick()"
+            >
+              {{ 'NEW_PAGE' | translate }}
+            </ion-button>
+          </div>
+        </div>
+        <div class="back-button">
+          <ion-button
+            fill="solid"
+            color="primary"
+            (click)="onBackClick()"
+            *ngIf="path && path !== '/'"
+          >
+            <ion-icon name="arrow-back-outline"></ion-icon>
+            <span>{{ 'BACK' | translate }}</span>
+          </ion-button>
+          <div class="breadcrumbs" *ngIf="path && path !== '/'">
+            <span>{{ 'PATH' | translate }}: </span>
+            <span class="breadcrumb" (click)="onHomeBreadcrumbClick()">
+              {{ 'HOME' | translate }}
+            </span>
+            <span> / </span>
+            <span *ngFor="let pathItem of pathBreadcrumb; let i = index">
+              <span *ngIf="i !== 0"> / </span>
+              <span
+                class="breadcrumb"
+                (click)="onBreadcrumbClick(i)"
+                [class.active-breadcrumb]="i === pathBreadcrumb.length - 1"
+              >
+                {{ pathItem }}
+              </span>
+            </span>
+          </div>
+          <div class="project-folder" *ngIf="project && (path === project.name || path?.startsWith(project.name + '/'))">
+            <span>{{ 'ITEM_ATTACHMENT_FOLDER' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- UPLOADED DOCS -->
+        <div class="docs-list" *ngIf="selectedSection === 'uploaded'">
+          <form *ngIf="project && path !== project.name">
+            <label for="docs-page-file-upload" class="custom-file custom-file-upload">
+              <ion-icon class="presentation-icon" name="cloud-upload-outline"></ion-icon>
+              <span class="file-title">{{ 'UPLOAD_FILES' | translate }}</span>
+            </label>
+            <input
+              id="docs-page-file-upload"
+              type="file"
+              multiple
+              #fileInput
+              (change)="onFileSelected($event)"
+            />
+          </form>
+
+          <ng-container *ngFor="let file of uploadedDocs">
+            <div
+              *ngIf="file.users?.includes(user!._id) || hasCompatibleRole(file.roles, user!._id)"
+              class="custom-file"
+              (click)="onFileClick(file)"
+            >
+              <ion-button
+                [id]="'file-actions-trigger-' + file._id"
+                class="file-actions"
+                fill="clear"
+                color="dark"
+                (click)="$event.stopPropagation()"
+              >
+                <ion-icon name="ellipsis-vertical"></ion-icon>
+              </ion-button>
+              <ion-popover [trigger]="'file-actions-trigger-' + file._id" triggerAction="click" dismissOnSelect>
+                <ng-template>
+                  <ion-content>
+                    <ion-list>
+                      <ion-item
+                        *ngIf="file.type !== 'folder'"
+                        button
+                        (click)="onFileDownload(file)"
+                      >
+                        <ion-icon slot="start" name="download-outline"></ion-icon>
+                        <ion-label>{{ 'DOWNLOAD' | translate }}</ion-label>
+                      </ion-item>
+                      <ion-item
+                        *ngIf="(user?._id === file.ownerId || hasCompatibleRole(['OWNER', 'ADMIN'], user!._id)) && !file.is_project_storage_folder && !file.is_project_storage_file"
+                        button
+                        (click)="onFileEditAccess(file)"
+                      >
+                        <ion-icon slot="start" name="people-outline"></ion-icon>
+                        <ion-label>{{ 'MANAGE_ACCESS' | translate }}</ion-label>
+                      </ion-item>
+                      <ion-item button (click)="onFileDetails(file)">
+                        <ion-icon slot="start" name="list-outline"></ion-icon>
+                        <ion-label>{{ 'DETAILS' | translate }}</ion-label>
+                      </ion-item>
+                      <ion-item
+                        *ngIf="(user?._id === file.ownerId || hasCompatibleRole(['OWNER', 'ADMIN'], user!._id)) && !file.is_project_storage_folder && !file.is_project_storage_file"
+                        button
+                        (click)="onFileDelete(file)"
+                      >
+                        <ion-icon slot="start" name="trash-outline"></ion-icon>
+                        <ion-label>{{ 'DELETE' | translate }}</ion-label>
+                      </ion-item>
+                    </ion-list>
+                  </ion-content>
+                </ng-template>
+              </ion-popover>
+
+              <ion-icon
+                *ngIf="fileTypesFolders.includes(file.type)"
+                class="presentation-icon"
+                name="folder-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesDocuments.includes(file.type)"
+                class="presentation-icon"
+                name="document-text-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesPresentations.includes(file.type)"
+                class="presentation-icon"
+                name="easel-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesSpreadsheets.includes(file.type)"
+                class="presentation-icon"
+                name="grid-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesArchives.includes(file.type)"
+                class="presentation-icon"
+                name="file-tray-stacked-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesExecutables.includes(file.type)"
+                class="presentation-icon"
+                name="play-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesImages.includes(file.type)"
+                class="presentation-icon"
+                name="image-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesVideos.includes(file.type)"
+                class="presentation-icon"
+                name="film-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="fileTypesAudios.includes(file.type)"
+                class="presentation-icon"
+                name="musical-note-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="
+                  !fileTypesFolders.includes(file.type)
+                  && !fileTypesDocuments.includes(file.type)
+                  && !fileTypesPresentations.includes(file.type)
+                  && !fileTypesSpreadsheets.includes(file.type)
+                  && !fileTypesArchives.includes(file.type)
+                  && !fileTypesExecutables.includes(file.type)
+                  && !fileTypesImages.includes(file.type)
+                  && !fileTypesVideos.includes(file.type)
+                  && !fileTypesAudios.includes(file.type)
+                "
+                class="presentation-icon"
+                name="document-outline"
+              ></ion-icon>
+              <span class="file-title">{{ file.name }}</span>
+              <span class="file-details">
+                {{ file.type | fileType }}
+                <span *ngIf="file.size"> | {{ (file.size / 1000 | number: '1.0-0') + ' KB' }}</span>
+              </span>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- COLLAB DOCS -->
+        <div class="docs-list" *ngIf="selectedSection === 'collab'">
+          <ng-container *ngFor="let file of collabDocs">
+            <div
+              *ngIf="file.users?.includes(user!._id) || hasCompatibleRole(file.roles, user!._id)"
+              class="custom-file"
+              (click)="onCollabDocOpen(file)"
+            >
+              <ion-button
+                [id]="'file-actions-trigger-' + file._id"
+                class="file-actions"
+                fill="clear"
+                color="dark"
+                (click)="$event.stopPropagation()"
+              >
+                <ion-icon name="ellipsis-vertical"></ion-icon>
+              </ion-button>
+              <ion-popover [trigger]="'file-actions-trigger-' + file._id" triggerAction="click" dismissOnSelect>
+                <ng-template>
+                  <ion-content>
+                    <ion-list>
+                      <ion-item
+                        *ngIf="!file.is_folder"
+                        button
+                        (click)="onCollabDocOpen(file)"
+                      >
+                        <ion-icon slot="start" name="eye-outline"></ion-icon>
+                        <ion-label>{{ 'OPEN' | translate }}</ion-label>
+                      </ion-item>
+                      <ion-item
+                        *ngIf="(user?._id === file.ownerId || hasCompatibleRole(['OWNER', 'ADMIN'], user!._id))"
+                        button
+                        (click)="onCollabDocEditAccess(file)"
+                      >
+                        <ion-icon slot="start" name="people-outline"></ion-icon>
+                        <ion-label>{{ 'MANAGE_ACCESS' | translate }}</ion-label>
+                      </ion-item>
+                      <ion-item button (click)="onCollabDocDetails(file)">
+                        <ion-icon slot="start" name="list-outline"></ion-icon>
+                        <ion-label>{{ 'DETAILS' | translate }}</ion-label>
+                      </ion-item>
+                      <ion-item
+                        *ngIf="(user?._id === file.ownerId || hasCompatibleRole(['OWNER', 'ADMIN'], user!._id))"
+                        button
+                        (click)="onCollabDocDelete(file)"
+                      >
+                        <ion-icon slot="start" name="trash-outline"></ion-icon>
+                        <ion-label>{{ 'DELETE' | translate }}</ion-label>
+                      </ion-item>
+                    </ion-list>
+                  </ion-content>
+                </ng-template>
+              </ion-popover>
+
+              <ion-icon
+                *ngIf="!file.is_folder"
+                class="presentation-icon"
+                name="document-text-outline"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="file.is_folder"
+                class="presentation-icon"
+                name="folder-outline"
+              ></ion-icon>
+              <span class="file-title">{{ file.name }}</span>
+              <span class="file-details">
+                {{ file.is_folder ? ('FOLDER' | translate) : ('COLLAB' | translate) }}
+              </span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-doc-details
+    [isDetailsOpen]="isDetailsOpen"
+    [detailsDoc]="detailsDoc"
+    [projectUsers]="projectUsers"
+    (detailsClose)="closeDetails()"
+  ></app-doc-details>
+
+  <app-doc-access
+    [user]="user"
+    [isAccessOpen]="isAccessOpen"
+    [doc]="detailsDoc"
+    [projectUsers]="projectUsers"
+    (accessClose)="closeAccess()"
+    (accessSave)="saveAccess($event)"
+  ></app-doc-access>
+
+  <app-page-details
+    [isDetailsOpen]="isCollabDetailsOpen"
+    [detailsDoc]="collabDetailsDoc"
+    [projectUsers]="projectUsers"
+    (detailsClose)="closeCollabDetails()"
+  ></app-page-details>
+
+  <app-page-access
+    [user]="user"
+    [isAccessOpen]="isCollabAccessOpen"
+    [doc]="collabDetailsDoc"
+    [projectUsers]="projectUsers"
+    (accessClose)="closeCollabAccess()"
+    (accessSave)="saveCollabAccess($event)"
+  ></app-page-access>
+
+  <app-image-viewer-modal
+    [isOpen]="isExpandedDocImage"
+    [image]="expandedDoc"
+    (closeModal)="onCloseImageVideoViewer()"
+  ></app-image-viewer-modal>
+
+  <app-video-viewer-modal
+    [isOpen]="isExpandedDocVideo"
+    [video]="expandedDoc"
+    (closeModal)="onCloseImageVideoViewer()"
+  ></app-video-viewer-modal>
+</ion-content>

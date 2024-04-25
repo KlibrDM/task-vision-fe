@@ -1,0 +1,30 @@
+.add-column-button {
+  margin-left: 16px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.column-type-text {
+  color: gray;
+  font-size: 0.8em;
+}
+
+.no-done-column-warning {
+  color: var(--ion-color-warning);
+  margin: 8px 8px 0px 16px;
+}
+
+@media screen and (max-width: 768px) {
+  .column-item {
+    --inner-padding-end: 0px;
+  }
+
+  .column-input ion-button {
+    margin-left: 0;
+    --padding-start: 4px;
+    --padding-end: 4px;
+    --padding-top: 4px;
+    --padding-bottom: 4px;
+    width: 32px;
+  }
+}

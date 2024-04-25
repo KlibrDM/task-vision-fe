@@ -1,0 +1,243 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'PROFILE' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="profile">
+      <div class="content" *ngIf="user">
+        <!-- Header -->
+        <div class="profile-header">
+          <app-general-header
+            name="{{ 'NAME_PROFILE' | translate: { name: user.first_name + ' ' + user.last_name } }}"
+          ></app-general-header>
+        </div>
+
+        <div class="profile-cards">
+          <!-- GENERAL CARD -->
+          <ion-card class="general-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'GENERAL' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-item>
+                <ion-input
+                  label="{{ 'FIRST_NAME' | translate }}"
+                  labelPlacement="fixed"
+                  type="text"
+                  maxlength="60"
+                  required
+                  [(ngModel)]="firstName"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-input
+                  label="{{ 'LAST_NAME' | translate }}"
+                  labelPlacement="fixed"
+                  type="text"
+                  maxlength="60"
+                  required
+                  [(ngModel)]="lastName"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-input
+                  label="{{ 'EMAIL' | translate }}"
+                  labelPlacement="fixed"
+                  type="text"
+                  value="{{ user.email }}"
+                  readonly
+                  disabled
+                ></ion-input>
+              </ion-item>
+
+              <ion-button
+                size="medium"
+                (click)="onGeneralSave()"
+              >
+                {{ 'SAVE' | translate }}
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- SETTINGS CARD -->
+          <ion-card class="settings-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'SETTINGS' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-item>
+                <ion-select
+                  label="{{ 'LANGUAGE' | translate }}"
+                  justify="start"
+                  [(ngModel)]="language"
+                  (ngModelChange)="onLanguageChange($event)"
+                >
+                  <ion-select-option
+                    *ngFor="let language of languages"
+                    value="{{ language.code }}"
+                  >
+                    {{ language.name }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="enableReactivity"
+                  matTooltip="{{ 'REACTIVITY_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'REACTIVITY' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="mentionNotifications"
+                  matTooltip="{{ 'MENTION_NOTIFICATIONS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'MENTION_NOTIFICATIONS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="assignmentNotifications"
+                  matTooltip="{{ 'ASSIGNMENT_NOTIFICATIONS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'ASSIGNMENT_NOTIFICATIONS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="sprintNotifications"
+                  matTooltip="{{ 'SPRINT_NOTIFICATIONS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'SPRINT_NOTIFICATIONS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox
+                  justify="start"
+                  [(ngModel)]="itemNotifications"
+                  matTooltip="{{ 'ITEM_NOTIFICATIONS_TOOLTIP' | translate }}"
+                  matTooltipShowDelay="1500"
+                  matTooltipPosition="above"
+                  matTooltipPositionAtOrigin
+                >
+                  {{ 'ITEM_NOTIFICATIONS' | translate }}
+                </ion-checkbox>
+              </ion-item>
+
+              <ion-button
+                size="medium"
+                (click)="onSettingsSave()"
+              >
+                {{ 'SAVE' | translate }}
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- PASSWORD CARD -->
+          <ion-card class="password-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'PASSWORD' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ion-item>
+                <ion-input
+                  label="{{ 'CURRENT_PASSWORD' | translate }}"
+                  labelPlacement="start"
+                  class="password-input"
+                  type="password"
+                  maxlength="60"
+                  minLength="5"
+                  required
+                  [(ngModel)]="currentPassword"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-input
+                  label="{{ 'NEW_PASSWORD' | translate }}"
+                  labelPlacement="start"
+                  class="password-input"
+                  type="password"
+                  maxlength="60"
+                  minLength="5"
+                  required
+                  [(ngModel)]="newPassword"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-input
+                  label="{{ 'CONFIRM_PASSWORD' | translate }}"
+                  labelPlacement="start"
+                  class="password-input"
+                  type="password"
+                  maxlength="60"
+                  minLength="5"
+                  required
+                  [(ngModel)]="confirmPassword"
+                ></ion-input>
+              </ion-item>
+
+              <div *ngIf="passwordErrorText" class="password-error-text">{{ passwordErrorText }}</div>
+
+              <ion-button
+                size="medium"
+                (click)="onChangePassword()"
+              >
+                {{ 'CHANGE_PASSWORD' | translate }}
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-button
+            color="danger"
+            class="logout-button"
+            (click)="onLogout()"
+          >
+            {{ 'LOGOUT' | translate }}
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

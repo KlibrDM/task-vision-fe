@@ -1,0 +1,59 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'CHARTS_REPORTS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="profile">
+      <div class="content" *ngIf="project">
+        <!-- Header -->
+        <div class="charts-header">
+          <app-general-header
+            name="{{ 'CHARTS_REPORTS' | translate }}"
+          ></app-general-header>
+        </div>
+
+        <div class="charts-cards">
+          <ion-card class="chart-list-card">
+            <ion-card-content>
+              <div class="chart-list-scroller">
+                <div
+                  *ngFor="let chart of chartList"
+                  class="chart-list-element"
+                  [class.chart-list-element-active]="chart.code === selectedChartCode"
+                  (click)="selectChart(chart)"
+                >
+                  <h2>
+                    {{ chart.translation_code | translate }}
+                  </h2>
+                  <p>
+                    {{ chart.description_translation_code | translate }}
+                  </p>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- ACTIVE CHART -->
+          <ion-card class="active-chart-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ selectedChartNameTranslationCode | translate }} ({{ 'WORK_IN_PROGRESS' | translate }})
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ng-template #chartComponent></ng-template>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

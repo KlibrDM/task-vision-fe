@@ -1,0 +1,30 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'MORE' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="more">
+      <div class="content">
+        <div
+          *ngFor="let menu of moreMenusView"
+          class="menu-card"
+          (click)="onMenuClick(menu)"
+        >
+          <div class="menu-card-icon">
+            <ion-icon [name]="menu.icon"></ion-icon>
+          </div>
+          <div class="menu-card-title">
+            <p>{{ menu.translation_code | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

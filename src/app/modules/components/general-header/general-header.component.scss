@@ -1,0 +1,22 @@
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.project-name {
+  font-size: 2em;
+  background-color: var(--item-bg-color);
+  box-shadow: var(--item-shadow);
+  padding: 12px 12px;
+  border-radius: 8px;
+  margin-bottom: 0;
+  line-height: 1em;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

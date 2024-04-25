@@ -1,0 +1,67 @@
+<div class="container" *ngIf="pages > 1">
+  <div
+    class="first-page"
+    [class.active]="currentPage === 1"
+    (click)="onPageChange(1)"
+  >
+    1
+  </div>
+  <div class="spacer" *ngIf="(currentPage - 1) > 2 && pages > 4">
+    ...
+  </div>
+
+  <!-- CurrentPage - 2 if last is selected -->
+  <div
+    *ngIf="currentPage === pages && (currentPage - 2) > 1"
+    class="page"
+    (click)="onPageChange(currentPage - 2)"
+  >
+    {{ currentPage - 2 }}
+  </div>
+
+  <div
+    *ngIf="pages > 2 && (currentPage - 1) > 1 && (currentPage - 1) < pages"
+    class="page"
+    (click)="onPageChange(currentPage - 1)"
+  >
+    {{ currentPage - 1 }}
+  </div>
+
+  <div
+    *ngIf="pages > 2 && currentPage > 1 && (currentPage) < pages"
+    class="page"
+    [class.active]="currentPage !== 1 && currentPage !== pages"
+    (click)="onPageChange(currentPage)"
+  >
+    {{ currentPage }}
+  </div>
+
+  <div
+    *ngIf="pages > 2 && (currentPage + 1) > 1 && (currentPage + 1) < pages"
+    class="page"
+    (click)="onPageChange(currentPage + 1)"
+  >
+    {{ currentPage + 1 }}
+  </div>
+
+  <!-- Third page if first is selected -->
+  <div
+    *ngIf="currentPage === 1 && (currentPage + 2) < pages"
+    class="page"
+    (click)="onPageChange(3)"
+  >
+    3
+  </div>
+
+  <div class="spacer" *ngIf="(currentPage + 1) < (pages - 1) && pages > 4">
+    ...
+  </div>
+
+  <div
+    class="last-page"
+    [class.active]="currentPage === pages"
+    (click)="onPageChange(pages)"
+  >
+    {{ pages }}
+  </div>
+</div>

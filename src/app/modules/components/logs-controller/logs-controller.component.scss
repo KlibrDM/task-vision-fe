@@ -1,0 +1,19 @@
+.top-button-group {
+  margin-left: 16px;
+  display: flex;
+  justify-content: space-between;
+
+  .refresh-logs-button {
+    margin-left: auto;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  app-pagination {
+    align-self: flex-end;
+  }
+}
