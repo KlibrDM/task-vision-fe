@@ -21,3 +21,8 @@
     </ion-button>
   </ion-buttons>
 </ion-toolbar>
+
+<app-search-popup
+  *ngIf="isSearchOpen"
+  (closePopup)="closeSearch()"
+></app-search-popup>

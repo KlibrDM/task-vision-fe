@@ -6,7 +6,8 @@ import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { personOutline, notificationsOutline } from 'ionicons/icons';
+import { personOutline, notificationsOutline, searchOutline } from 'ionicons/icons';
+import { SearchPopupComponent } from '../search-popup/search-popup.component';
 
 interface navbarItem {
   code: string;
@@ -20,7 +21,13 @@ interface navbarItem {
   templateUrl: './board-navbar.component.html',
   styleUrls: ['./board-navbar.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, TranslateModule]
+  imports: [
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    SearchPopupComponent,
+  ]
 })
 export class BoardNavbarComponent {
   navbarLeftItems: navbarItem[] = [
@@ -32,6 +39,11 @@ export class BoardNavbarComponent {
   ];
   navbarRightItems: navbarItem[] = [
     {
+      code: 'search',
+      icon: 'search-outline',
+      action: () => this.openSearch(),
+    },
+    {
       code: 'notifications',
       icon: 'notifications-outline',
       action: () => this.openNotifications(),
@@ -41,14 +53,16 @@ export class BoardNavbarComponent {
       icon: 'person-outline',
       action: () => this.goTo('/app/profile'),
     },
-  ]
+  ];
+
+  isSearchOpen = false;
 
   constructor(
     private router: Router,
     private alertController: AlertController,
     private translate: TranslateService,
   ) {
-    addIcons({ personOutline, notificationsOutline });
+    addIcons({ personOutline, notificationsOutline, searchOutline });
   }
 
   goTo(route: string) {
@@ -60,5 +74,13 @@ export class BoardNavbarComponent {
       header: this.translate.instant('COMING_SOON'),
       buttons: [this.translate.instant('OK')]
     }).then((alert) => alert.present());
+  }
+
+  openSearch() {
+    this.isSearchOpen = true;
+  }
+
+  closeSearch() {
+    this.isSearchOpen = false;
   }
 }

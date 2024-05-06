@@ -1,0 +1,41 @@
+<div class="search-container" (click)="onBackdropClick()">
+  <div class="search-input-container" (click)="onContentClick($event)">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="{{ 'SEARCH_FOR_ITEM_BY_CODE_OR_NAME' | translate }}"
+      [(ngModel)]="searchText"
+      (ngModelChange)="filterItems()"
+    />
+  </div>
+  <div
+    class="results-container result-success-border"
+    *ngIf="filteredItems.length"
+    (click)="onContentClick($event)"
+  >
+    <a
+      class="result-item"
+      *ngFor="let item of filteredItems"
+      [routerLink]="'/app/item/' + item._id"
+    >
+      <div class="result-item-code">{{ item.code }}&nbsp;</div>
+      <div class="result-item-name">{{ item.name }}</div>
+      <div class="result-item-icons">
+        <div class="item-priority">
+          <app-item-property-icon [property]="item.priority" [inverse]="true"></app-item-property-icon>
+        </div>
+        <div class="item-type">
+          <app-item-property-icon [property]="item.type" [inverse]="true"></app-item-property-icon>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div
+    class="results-container result-error-border"
+    *ngIf="searchText.length && !filteredItems.length"
+    (click)="onContentClick($event)"
+  >
+    {{ 'NO_ITEMS_FOUND' | translate }}
+  </div>
+</div>
