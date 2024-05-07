@@ -16,6 +16,8 @@ import { IProject, ProjectRole } from 'src/app/models/project';
 import { Router } from '@angular/router';
 import { WS_CLIENT_EVENTS } from 'src/app/models/ws';
 import { ICollabDoc } from 'src/app/models/collabDocs';
+import { sparklesOutline } from 'ionicons/icons';
+import { addIcons } from 'ionicons';
 
 @Component({
   selector: 'app-pages',
@@ -46,14 +48,16 @@ export class PagesPage {
   doc?: ICollabDoc;
 
   docNameInput = '';
+  docAISummaryInput = '';
   docContentInput = '';
   docContentMD = '';
 
   contentQueryChanged: Subject<string> = new Subject<string>();
+  isAISummaryGenerating = false;
 
   allowEdit = false;
   activeUsers: string[] = [];
-  editedBy?: string; 
+  editedBy?: string;
 
   constructor(
     private router: Router,
@@ -65,7 +69,9 @@ export class PagesPage {
     private alertController: AlertController,
     private location: Location,
     private socketService: SocketService,
-  ) { }
+  ) {
+    addIcons({ sparklesOutline });
+  }
 
   ionViewWillEnter() {
     combineLatest([
@@ -141,7 +147,8 @@ export class PagesPage {
       }
       this.doc = doc;
       this.docNameInput = doc.name;
-      this.docContentInput = doc.content;
+      this.docContentInput = doc.content ?? '';
+      this.docAISummaryInput = doc.ai_summary ?? '';
       this.editedBy = doc.is_edited_by;
       this.getContentMD(doc.content);
     });
@@ -158,7 +165,8 @@ export class PagesPage {
 
   onDiscardClick() {
     this.docNameInput = this.doc!.name;
-    this.docContentInput = this.doc!.content;
+    this.docContentInput = this.doc!.content ?? '';
+    this.docAISummaryInput = this.doc!.ai_summary ?? '';
     this.getContentMD(this.doc!.content);
 
     this.socketService.setCollabDocEditedBy('', this.doc!._id);
@@ -166,14 +174,15 @@ export class PagesPage {
   }
 
   onSaveClick() {
-    this.collabDocsService.updateDoc(this.user!.access_token!, this.project!._id, this.doc!._id, this.docNameInput, this.docContentInput).subscribe({
+    this.collabDocsService.updateDoc(this.user!.access_token!, this.project!._id, this.doc!._id, this.docNameInput, this.docContentInput, this.docAISummaryInput).subscribe({
       next: (doc) => {
         if (!doc.content) {
           doc.content = '';
         }
         this.doc = doc;
         this.docNameInput = doc.name;
-        this.docContentInput = doc.content;
+        this.docContentInput = doc.content ?? '';
+        this.docAISummaryInput = doc.ai_summary ?? '';
         this.getContentMD(doc.content);
 
         this.socketService.setCollabDocEditedBy('', this.doc!._id);
@@ -202,6 +211,45 @@ export class PagesPage {
     }).then((alert) => alert.present());
   }
 
+  onSeeAiSummaryClick() {
+    if (!this.doc?.ai_summary) {
+      return;
+    }
+
+    this.alertController.create({
+      header: this.translate.instant('AI_SUMMARY'),
+      message: this.doc.ai_summary,
+      cssClass: 'alert-text-pre',
+      buttons: [this.translate.instant('OK')]
+    }).then((alert) => alert.present());
+  }
+
+  onGenerateAiSummaryClick() {
+    if (!this.docNameInput || !this.docContentInput) {
+      return;
+    }
+
+    this.isAISummaryGenerating = true;
+
+    this.collabDocsService.getDocAISummary(this.user!.access_token!, {
+      name: this.docNameInput,
+      content: this.docContentInput
+    }).subscribe({
+      next: (res) => {
+        this.docAISummaryInput = res.summary;
+        this.isAISummaryGenerating = false;
+      },
+      error: () => {
+        this.toastController.create({
+          message: this.translate.instant('ERROR_WHILE_GENERATING_AI_SUMMARY'),
+          duration: 4000,
+          color: 'danger'
+        }).then((toast) => toast.present());
+        this.isAISummaryGenerating = false;
+      }
+    });
+  }
+
   getUserNameAtId(id: string) {
     const user = this.projectUsers?.find((user) => user._id === id);
     return user?.first_name + ' ' + user?.last_name ?? this.translate.instant('UNKNOWN');
@@ -226,7 +274,8 @@ export class PagesPage {
     }
     this.doc = doc;
     this.docNameInput = doc.name;
-    this.docContentInput = doc.content;
+    this.docContentInput = doc.content ?? '';
+    this.docAISummaryInput = doc.ai_summary ?? '';
     this.getContentMD(doc.content);
   }
 }

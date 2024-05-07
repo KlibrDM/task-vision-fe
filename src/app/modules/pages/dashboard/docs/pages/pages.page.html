@@ -9,7 +9,7 @@
     </ion-toolbar>
   </ion-header>
 
-  <div class="ion-padding">
+  <div class="ion-padding main-container">
     <div class="content" *ngIf="doc">
       <div class="document-header">
         <div class="document-name">
@@ -43,6 +43,7 @@
             {{ 'EDIT' | translate }}
           </ion-button>
         </div>
+
         <div class="document-info">
           <div class="document-info-active-users">
             <p>
@@ -65,6 +66,39 @@
             </p>
           </div>
         </div>
+
+        <div class="document-ai-summary" *ngIf="!allowEdit && doc.ai_summary">
+          <ion-button (click)="onSeeAiSummaryClick()">
+            {{ 'AI_SUMMARY' | translate }}
+          </ion-button>
+        </div>
+
+        <div class="document-ai-summary" *ngIf="allowEdit">
+          <ion-button (click)="onGenerateAiSummaryClick()" *ngIf="!docAISummaryInput && !isAISummaryGenerating">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            &nbsp;
+            {{ 'GENERATE_AI_SUMMARY' | translate }}
+          </ion-button>
+          <div class="document-ai-summary-spinner-container" *ngIf="!docAISummaryInput && isAISummaryGenerating">
+            <ion-spinner></ion-spinner>
+          </div>
+
+          <div class="document-ai-summary-textarea-container" *ngIf="docAISummaryInput">
+            <ion-textarea
+              #documentAiSummary
+              label="{{ 'AI_SUMMARY' | translate }}"
+              labelPlacement="floating"
+              type="text"
+              autoGrow
+              maxlength="10000000"
+              lines="none"
+              fill="outline"
+              class="document-ai-summary-textarea"
+              placeholder="{{ 'WRITE_SUMMARY_HERE' | translate }}"
+              [(ngModel)]="docAISummaryInput"
+            ></ion-textarea>
+          </div>
+        </div>
       </div>
 
       <div class="document-edit" *ngIf="allowEdit">
@@ -74,7 +108,7 @@
             #documentContent
             type="text"
             autoGrow
-            maxlength="30000"
+            maxlength="10000000"
             lines="none"
             fill="outline"
             class="document-edit-textarea"
