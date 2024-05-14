@@ -14,24 +14,13 @@ import { firstValueFrom } from 'rxjs';
 import { ChartDataService } from 'src/app/services/chartData.service';
 import { EventType, IChartData, IChartDataItem } from 'src/app/models/chartData';
 import { RouterModule } from '@angular/router';
-
-interface ITableData {
-  date: string;
-  items: {
-    id: string;
-    code: string;
-    name: string;
-    oldValue?: string;
-    newValue?: string;
-    valueType?: 'complexity' | 'estimate';
-  }[];
-  eventType: EventType;
-}
+import { ItemEstimateBadgeComponent } from 'src/app/modules/components/item-estimate-badge/item-estimate-badge.component';
+import { ItemPropertyIconComponent } from 'src/app/modules/components/item-property-icon/item-property-icon.component';
 
 @Component({
-  selector: 'app-burndown-chart',
-  templateUrl: './burndown-chart.component.html',
-  styleUrls: ['./burndown-chart.component.scss'],
+  selector: 'app-sprint-report',
+  templateUrl: './sprint-report.component.html',
+  styleUrls: ['./sprint-report.component.scss'],
   standalone: true,
   imports: [
     IonicModule,
@@ -39,9 +28,11 @@ interface ITableData {
     FormsModule,
     TranslateModule,
     RouterModule,
+    ItemEstimateBadgeComponent,
+    ItemPropertyIconComponent,
   ]
 })
-export class BurndownChartComponent implements OnInit {
+export class SprintReportComponent implements OnInit {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -50,10 +41,16 @@ export class BurndownChartComponent implements OnInit {
   @Input() sprints?: ISprint[];
 
   chart?: any;
-  tableData: ITableData[] = [];
+  completedItems: IItem[] = [];
+  unfinishedItems: IItem[] = [];
+  sprintStartEvent?: IChartData;
+  sprintEndEvent?: IChartData;
   sprintStartTotal?: number = 0;
   sprintEndTotal?: number = 0;
+  sprintCompletedTotal?: number = 0;
+  sprintUnfinishedTotal?: number = 0;
   
+  selectedSprint?: ISprint;
   selectedSprintId?: string;
   selectedMeasure: 'complexity' | 'hours' | 'item_count' = 'complexity';
 
@@ -68,15 +65,18 @@ export class BurndownChartComponent implements OnInit {
     const activeSprintId = this.project?.currentSprintId;
     if (!activeSprintId) {
       this.selectedSprintId = this.sprints?.[0]?._id;
+      this.selectedSprint = this.sprints?.[0];
     }
     else {
       this.selectedSprintId = activeSprintId;
+      this.selectedSprint = this.sprints?.find(s => s._id === activeSprintId);
     }
     this.initializeChart();
   }
 
   onSprintChange(sprintId: string) {
     this.selectedSprintId = sprintId;
+    this.selectedSprint = this.sprints?.find(s => s._id === sprintId);
     this.initializeChart();
   }
 
@@ -180,6 +180,9 @@ export class BurndownChartComponent implements OnInit {
 
     this.sprintEndTotal = sprintEndEvent?.items.reduce((acc, item) => this.addMeasure(acc, item), 0);
 
+    this.sprintStartEvent = sprintStartEvent;
+    this.sprintEndEvent = sprintEndEvent;
+
     // Go through each day and create an array of days (skip weekends if needed)
     const numberOfDays = moment(sprint.end_date).diff(moment(sprint.start_date), 'days');
     const days: moment.Moment[] = [];
@@ -278,7 +281,51 @@ export class BurndownChartComponent implements OnInit {
       }
     }
 
-    this.initializeTable(itemsChanged);
+    // Get total for completed items
+    let completedCurrentValue = 0;
+    const completedItemIdSet = new Set<string>();
+    itemsChanged.forEach(entry => {
+      if (entry.event_type === EventType.ITEM_COMPLETED) {
+        entry.items.forEach(item => {
+          completedCurrentValue = this.addMeasure(completedCurrentValue, item);
+          completedItemIdSet.add(item.itemId);
+        });
+      }
+    });
+    this.sprintCompletedTotal = completedCurrentValue;
+    this.completedItems = this.items?.filter(i => completedItemIdSet.has(i._id)) || [];
+
+    // Create set of unfinished items
+    let unfinishedCurrentValue = 0;
+    const unfinishedItemsSet = new Set<string>();
+    itemsChanged.forEach(entry => {
+      if (entry.event_type === EventType.SPRINT_START) {
+        entry.items.forEach(item => {
+          unfinishedCurrentValue = this.addMeasure(unfinishedCurrentValue, item);
+          unfinishedItemsSet.add(item.itemId);
+        });
+      }
+      if (entry.event_type === EventType.ADDED_TO_SPRINT) {
+        entry.items.forEach(item => {
+          unfinishedCurrentValue = this.addMeasure(unfinishedCurrentValue, item);
+          unfinishedItemsSet.add(item.itemId);
+        });
+      }
+      if (entry.event_type === EventType.REMOVED_FROM_SPRINT) {
+        entry.items.forEach(item => {
+          unfinishedCurrentValue = this.subtractMeasure(unfinishedCurrentValue, item);
+          unfinishedItemsSet.delete(item.itemId);
+        });
+      }
+      if (entry.event_type === EventType.ITEM_COMPLETED) {
+        entry.items.forEach(item => {
+          unfinishedCurrentValue = this.subtractMeasure(unfinishedCurrentValue, item);
+          unfinishedItemsSet.delete(item.itemId);
+        });
+      }
+    });
+    this.sprintUnfinishedTotal = unfinishedCurrentValue;
+    this.unfinishedItems = this.items?.filter(i => unfinishedItemsSet.has(i._id)) || [];
 
     this.chart = new Chart('canvas', {
       type: 'line',
@@ -323,30 +370,6 @@ export class BurndownChartComponent implements OnInit {
           },
         }
       },
-    });
-  }
-
-  initializeTable(itemsChanged: IChartData[]) {
-    this.tableData = itemsChanged.map(entry => {
-      return {
-        date: moment(entry.createdAt).format('DD MMM YYYY, HH:mm'),
-        items: entry.items.map(item => {
-          const fullItem = this.items?.find(i => i._id === item.itemId)
-          return {
-            id: item.itemId,
-            code: fullItem?.code || '',
-            name: fullItem?.name || '',
-            oldValue: item.old_complexity?.toString() || item.old_estimate?.toString() || '',
-            newValue: item.complexity?.toString() || item.estimate?.toString() || '',
-            valueType: item.complexity
-              ? 'complexity'
-              : item.estimate
-                ? 'estimate'
-                : undefined
-          }
-        }),
-        eventType: entry.event_type
-      }
     });
   }
 }

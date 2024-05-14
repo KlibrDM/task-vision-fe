@@ -10,7 +10,7 @@ import { IUser, IUserPartner } from 'src/app/models/user';
 import { GeneralHeaderComponent } from 'src/app/modules/components/general-header/general-header.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IProject } from 'src/app/models/project';
-import { combineLatest } from 'rxjs';
+import { combineLatest, first } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 import { IItem, ItemType } from 'src/app/models/item';
 import { ISprint } from 'src/app/models/sprint';
@@ -19,6 +19,8 @@ import { ItemService } from 'src/app/services/item.service';
 import { BurndownChartComponent } from './chart-components/burndown-chart/burndown-chart.component';
 import { BurnupChartComponent } from './chart-components/burnup-chart/burnup-chart.component';
 import { NotAvailableChartComponent } from './chart-components/not-available-chart/not-available-chart.component';
+import { SprintReportComponent } from './chart-components/sprint-report/sprint-report.component';
+import { VelocityChartComponent } from './chart-components/velocity-chart/velocity-chart.component';
 
 interface IChartListItem {
   code: string;
@@ -44,13 +46,13 @@ const ChartList: IChartListItem[] = [
     code: 'sprint_report',
     translation_code: 'SPRINT_REPORT',
     description_translation_code: 'SPRINT_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: SprintReportComponent
   },
   {
     code: 'velocity',
     translation_code: 'VELOCITY_CHART',
     description_translation_code: 'VELOCITY_CHART_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: VelocityChartComponent
   },
   {
     code: 'cumulative_flow',
@@ -157,7 +159,7 @@ export class ChartsPage {
       }
       this.projectService.setActiveProjectId(id);
 
-      this.projectService.currentProject.subscribe((project) => {
+      this.projectService.currentProject.pipe(first()).subscribe((project) => {
         if (project) {
           this.project = project;
           this.getProjectDetails(project._id);

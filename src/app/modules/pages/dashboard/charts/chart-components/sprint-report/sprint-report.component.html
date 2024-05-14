@@ -1,0 +1,137 @@
+<div>
+  <p>{{ 'SPRINT_REPORT_LONG_DESCRIPTION' | translate }}</p>
+  <div class="options">
+    <div class="sprint-select">
+      <ion-item>
+        <ion-select
+          label="{{ 'SPRINT' | translate }}"
+          [(ngModel)]="selectedSprintId"
+          (ngModelChange)="onSprintChange($event)"
+        >
+          <ion-select-option
+            *ngFor="let sprint of sprints"
+            [value]="sprint._id"
+          >
+            {{ sprint.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+    <div class="measure-select">
+      <ion-item>
+        <ion-select
+          label="{{ 'MEASURE' | translate }}"
+          [(ngModel)]="selectedMeasure"
+          (ngModelChange)="onMeasureChange($event)"
+        >
+          <ion-select-option value="complexity">
+            {{ 'COMPLEXITY' | translate }}
+          </ion-select-option>
+          <ion-select-option value="hours">
+            {{ 'HOURS' | translate }}
+          </ion-select-option>
+          <ion-select-option value="item_count">
+            {{ 'ITEM_COUNT' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </div>
+  </div>
+  <div class="sprint-details" *ngIf="selectedSprint">
+    <div class="sprint-title">
+      <h2>{{ selectedSprint.name }}</h2>
+      <p
+        class="sprint-complete-status"
+        [class.sprint-complete-status-completed]="selectedSprint.is_completed"
+      >
+        {{ (selectedSprint.is_completed ? 'COMPLETED' : 'IN_PROGRESS') | translate }}
+      </p>
+    </div>
+    <p *ngIf="selectedSprint.description">{{ selectedSprint.description }}</p>
+    <div>
+      {{ 'START_DATE' | translate }}: {{ selectedSprint.start_date | date:'dd MMM YYYY' }}
+      <span *ngIf="sprintStartEvent">({{ 'ACTUAL' | translate }}: {{ sprintStartEvent.createdAt | date:'dd MMM YYYY, HH:MM' }})</span>
+    </div>
+    <div>
+      {{ 'END_DATE' | translate }}: {{ selectedSprint.end_date | date:'dd MMM YYYY' }}
+      <span *ngIf="sprintEndEvent">({{ 'ACTUAL' | translate }}: {{ sprintEndEvent.createdAt | date:'dd MMM YYYY, HH:MM' }})</span>
+    </div>
+    <div class="sprint-totals">
+      <div class="sprint-totals-start" *ngIf="sprintStartTotal !== undefined">
+        <span *ngIf="selectedMeasure === 'complexity'">{{ 'COMPLEXITY_AT_START' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'hours'">{{ 'ESTIMATE_AT_START' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'item_count'">{{ 'ITEMS_AT_START' | translate }}: </span>
+        {{ sprintStartTotal }}
+      </div>
+      <div class="sprint-totals-completed" *ngIf="sprintCompletedTotal !== undefined">
+        <span *ngIf="selectedMeasure === 'complexity'">{{ 'COMPLEXITY_COMPLETED' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'hours'">{{ 'ESTIMATE_COMPLETED' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'item_count'">{{ 'ITEMS_COMPLETED' | translate }}: </span> 
+        {{ sprintCompletedTotal }}
+      </div>
+      <div class="sprint-totals-unfinished" *ngIf="sprintUnfinishedTotal !== undefined">
+        <span *ngIf="selectedMeasure === 'complexity'">{{ 'COMPLEXITY_UNFINISHED' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'hours'">{{ 'ESTIMATE_UNFINISHED' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'item_count'">{{ 'ITEMS_UNFINISHED' | translate }}: </span> 
+        {{ sprintUnfinishedTotal }}
+      </div>
+      <div class="sprint-totals-end" *ngIf="sprintEndTotal !== undefined">
+        <span *ngIf="selectedMeasure === 'complexity'">{{ 'COMPLEXITY_LEFT_AT_END' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'hours'">{{ 'ESTIMATE_LEFT_AT_END' | translate }}: </span>
+        <span *ngIf="selectedMeasure === 'item_count'">{{ 'ITEMS_LEFT_AT_END' | translate }}: </span>
+        {{ sprintEndTotal }}
+      </div>
+    </div>
+  </div>
+  <canvas id="canvas">{{chart}}</canvas>
+  <div class="table" *ngIf="completedItems.length">
+    <h3>{{ 'COMPLETED_ITEMS' | translate }}</h3>
+    <div class="table-entry" *ngFor="let item of completedItems">
+      <div class="table-column"><a [routerLink]="['/app/item/' + item._id]">{{ item.code }}</a></div>
+      <div class="table-column">{{ item.name }}</div>
+      <div class="table-column table-item-badges">
+        <app-item-estimate-badge
+          *ngIf="item.complexity !== undefined"
+          [estimate]="item.complexity"
+          [type]="'complexity'">
+        </app-item-estimate-badge>
+        <app-item-estimate-badge
+          *ngIf="item.hours_left !== undefined"
+          [estimate]="item.hours_left"
+          [type]="'estimate'">
+        </app-item-estimate-badge>
+        <div class="item-priority">
+          <app-item-property-icon [property]="item.priority" [inverse]="true"></app-item-property-icon>
+        </div>
+        <div class="item-type">
+          <app-item-property-icon [property]="item.type" [inverse]="true"></app-item-property-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="table" *ngIf="unfinishedItems.length">
+    <h3>{{ 'UNFINISHED_ITEMS' | translate }}</h3>
+    <div class="table-entry" *ngFor="let item of unfinishedItems">
+      <div class="table-column"><a [routerLink]="['/app/item/' + item._id]">{{ item.code }}</a></div>
+      <div class="table-column">{{ item.name }}</div>
+      <div class="table-column table-item-badges">
+        <app-item-estimate-badge
+          *ngIf="item.complexity !== undefined"
+          [estimate]="item.complexity"
+          [type]="'complexity'">
+        </app-item-estimate-badge>
+        <app-item-estimate-badge
+          *ngIf="item.hours_left !== undefined"
+          [estimate]="item.hours_left"
+          [type]="'estimate'">
+        </app-item-estimate-badge>
+        <div class="item-priority">
+          <app-item-property-icon [property]="item.priority" [inverse]="true"></app-item-property-icon>
+        </div>
+        <div class="item-type">
+          <app-item-property-icon [property]="item.type" [inverse]="true"></app-item-property-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

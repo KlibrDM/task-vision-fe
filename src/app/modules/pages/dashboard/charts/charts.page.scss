@@ -24,6 +24,8 @@ ion-content {
   }
 
   .chart-list-card {
+    padding-right: 0;
+
     .chart-list-scroller {
       display: flex;
       overflow: auto;

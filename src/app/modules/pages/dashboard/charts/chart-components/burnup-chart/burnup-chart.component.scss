@@ -14,3 +14,47 @@
 #canvas {
   max-height: 500px;
 }
+
+.table {
+  margin-top: 8px;
+}
+
+.table-entry {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  color: var(--ion-text-color);
+}
+
+.table-entry:not(:last-child) {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--item-border-color);
+}
+
+.table-column {
+  flex-basis: 20%;
+  flex-shrink: 1;
+}
+
+.table-item {
+  flex-basis: 60%;
+  flex-shrink: 0;
+}
+
+.table-multi-item-container:not(:last-child) {
+  margin-bottom: 4px;
+}
+
+.item-values {
+  background-color: var(--markdown-accent-color-darker);
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+@media screen and (max-width: 768px) {
+  .table-entry {
+    flex-direction: column;
+  }
+}

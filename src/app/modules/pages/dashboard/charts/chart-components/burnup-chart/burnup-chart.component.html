@@ -36,17 +36,30 @@
         </ion-select>
       </ion-item>
     </div>
-    <div class="weekend-checkbox">
-      <ion-item>
-        <ion-checkbox
-          justify="start"
-          [(ngModel)]="showWeekends"
-          (ngModelChange)="onShowWeekendsChange($event)"
-        >
-          {{ 'SHOW_NON_WORKING_DAYS' | translate }}
-        </ion-checkbox>
-      </ion-item>
-    </div>
   </div>
   <canvas id="canvas">{{chart}}</canvas>
+  <div class="table" *ngIf="tableData.length">
+    <div class="table-entry" *ngFor="let entry of tableData">
+      <div class="table-column">{{ entry.date }}</div>
+      <div class="table-column">{{ entry.eventType | translate }}</div>
+      <div class="table-column table-item">
+        <div class="table-multi-item-container" *ngFor="let item of entry.items">
+          <span><a [routerLink]="['/app/item/' + item.id]">{{ item.code }}</a></span>
+          <span> {{ item.name }} </span>
+          <span class="item-values" *ngIf="item.newValue">
+            <span *ngIf="item.oldValue">{{ item.oldValue }} > </span>
+            <span>{{ item.newValue }}</span>
+            <span *ngIf="item.valueType === 'estimate'">h</span>
+            <span *ngIf="item.valueType === 'complexity'"> {{ 'COMPLEXITY' | translate }}</span>
+          </span>
+        </div>
+        <span *ngIf="entry.eventType === EventType.SPRINT_START">
+          {{ 'TOTAL_X' | translate: { count: sprintStartTotal } }}
+        </span>
+        <span *ngIf="entry.eventType === EventType.SPRINT_END">
+          {{ 'TOTAL_X' | translate: { count: sprintEndTotal } }}
+        </span>
+      </div>
+    </div>
+  </div>
 </div>
