@@ -1,0 +1,181 @@
+<ion-header [translucent]="true">
+  <app-board-navbar></app-board-navbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title>{{ 'ORGANIZATION_DETAILS' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <div class="organization">
+      <div class="content" *ngIf="organization && user">
+        <!-- Header -->
+        <div class="organization-settings-header">
+          <app-general-header
+            name="{{ 'ORGANIZATION_DETAILS' | translate }}"
+          ></app-general-header>
+        </div>
+
+        <div class="organization-cards">
+          <!-- GENERAL CARD -->
+          <ion-card class="general-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'GENERAL' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content *ngIf="currentUserRole !== organizationRolesEnum.MEMBER">
+              <ion-item>
+                <ion-input
+                  label="{{ 'ORGANIZATION_NAME' | translate }}"
+                  labelPlacement="floating"
+                  type="text"
+                  maxlength="120"
+                  required
+                  [(ngModel)]="organization.name"
+                ></ion-input>
+              </ion-item>
+
+              <ion-button
+                size="medium"
+                (click)="onGeneralSave()"
+              >
+                {{ 'SAVE' | translate }}
+              </ion-button>
+            </ion-card-content>
+
+            <ion-card-content *ngIf="currentUserRole === organizationRolesEnum.MEMBER">
+              <ion-item>
+                <ion-label position="fixed">{{ 'ORGANIZATION_NAME' | translate }}</ion-label>
+                <ion-text>{{ organization.name }}</ion-text>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- ADD USER CARD -->
+          <ion-card class="add-card" *ngIf="currentUserRole !== organizationRolesEnum.MEMBER">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'CREATE_USER' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <form [formGroup]="createForm" class="register-form" (ngSubmit)="onCreateUser()">
+      
+                <ion-input
+                  label="{{ 'FIRST_NAME' | translate }}"
+                  label-placement="floating"
+                  placeholder="{{ 'FIRST_NAME' | translate }}"
+                  formControlName="firstName"
+                  maxlength="60"
+                ></ion-input>
+      
+                <ion-input
+                  label="{{ 'LAST_NAME' | translate }}"
+                  label-placement="floating"
+                  placeholder="{{ 'LAST_NAME' | translate }}"
+                  formControlName="lastName"
+                  maxlength="60"
+                ></ion-input>
+      
+                <ion-input
+                  label="{{ 'EMAIL' | translate }}"
+                  label-placement="floating"
+                  placeholder="{{ 'EMAIL' | translate }}"
+                  type="email"
+                  formControlName="email"
+                  maxlength="120"
+                ></ion-input>
+      
+                <ion-input
+                  label="{{ 'PASSWORD' | translate }}"
+                  label-placement="floating"
+                  placeholder="{{ 'PASSWORD' | translate }}"
+                  type="password"
+                  formControlName="password"
+                  maxlength="60"
+                  [errorText]="createForm.get('password')?.hasError('minlength')
+                    ? ('VALIDATOR_MIN_LENGTH_X' | translate: { length: 5 })
+                    : null"
+                ></ion-input>
+      
+                <ion-button
+                  (click)="onCreateUser()"
+                  [disabled]="!createForm.valid"
+                >
+                  {{ 'CREATE_USER' | translate }}
+                </ion-button>
+      
+                <input type="submit" class="submit-enter" />
+              </form>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- MEMBERS CARD -->
+          <ion-card class="members-card">
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'USERS' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <ng-container *ngFor="let orgUser of organizationUsers">
+                <ion-item *ngIf="orgUser.is_active">
+                  <span class="member-name">
+                    {{ orgUser.first_name + ' ' + orgUser.last_name }}
+                    <span class="member-email">{{ orgUser.email }}</span>
+                  </span>
+
+                  <div class="member-actions" slot="end">
+                    <ion-select
+                      *ngIf="currentUserRole !== organizationRolesEnum.MEMBER
+                        && orgUser.role !== organizationRolesEnum.OWNER"
+                      class="role-select"
+                      [(ngModel)]="orgUser.role"
+                      (ngModelChange)="onRoleChange($event, orgUser._id)"
+                    >
+                      <ion-select-option
+                        *ngFor="let role of organizationRoles"
+                        [value]="role"
+                      >
+                        {{ role | translate }}
+                      </ion-select-option>
+                    </ion-select>
+
+                    <span class="member-owner-label" *ngIf="orgUser.role === organizationRolesEnum.OWNER">
+                      {{ 'OWNER' | translate }}
+                    </span>
+
+                    <span class="member-owner-label" *ngIf="
+                      orgUser.role !== organizationRolesEnum.OWNER
+                      && currentUserRole === organizationRolesEnum.MEMBER
+                    ">
+                      {{ orgUser.role | translate }}
+                    </span>
+
+                    <ion-button
+                      *ngIf="user._id !== orgUser._id
+                        && currentUserRole !== organizationRolesEnum.MEMBER
+                        && orgUser.role !== organizationRolesEnum.OWNER"
+                      fill="clear"
+                      color="danger"
+                      (click)="onDeleteUser(orgUser._id)"
+                    >
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-item>
+              </ng-container>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

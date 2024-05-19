@@ -1,3 +1,4 @@
+import { OrganizationRole } from "./organization";
 import { ProjectRole } from "./project";
 
 export interface IUserSettings {
@@ -22,6 +23,7 @@ export interface IUser {
   }[];
   active_projectId?: string;
   settings: IUserSettings;
+  is_active: boolean;
   access_token?: string;
   refresh_token?: string;
   createdAt?: Date;
@@ -49,4 +51,15 @@ export interface IUserPartner {
   organizationId?: string;
   is_active: boolean;
   role: ProjectRole;
+}
+
+export interface IUserOrganizationPartner {
+  _id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_organization_controlled: boolean;
+  organizationId?: string;
+  is_active: boolean;
+  role: OrganizationRole;
 }

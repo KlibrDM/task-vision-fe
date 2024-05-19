@@ -15,9 +15,66 @@
   </ion-header>
 
   <div class="ion-padding">
-    <div class="login">
+    <div class="register-organization">
       <div class="content">
-        <p>{{ 'COMING_SOON' | translate }}</p>
+        <form [formGroup]="registerForm" class="register-form" (ngSubmit)="registerOrganization()">
+          <h2>{{ 'REGISTER_ORGANIZATION_ACCOUNT' | translate }}</h2>
+          <p class="organization-register-description">{{ 'ORGANIZATION_REGISTER_DETAIL' | translate }}</p>
+
+          <ion-input
+            label="{{ 'ORGANIZATION_NAME' | translate }}"
+            label-placement="floating"
+            placeholder="{{ 'ORGANIZATION_NAME' | translate }}"
+            formControlName="orgName"
+            maxlength="120"
+          ></ion-input>
+
+          <ion-input
+            label="{{ 'FIRST_NAME' | translate }}"
+            label-placement="floating"
+            placeholder="{{ 'FIRST_NAME' | translate }}"
+            formControlName="firstName"
+            maxlength="60"
+          ></ion-input>
+
+          <ion-input
+            label="{{ 'LAST_NAME' | translate }}"
+            label-placement="floating"
+            placeholder="{{ 'LAST_NAME' | translate }}"
+            formControlName="lastName"
+            maxlength="60"
+          ></ion-input>
+
+          <ion-input
+            label="{{ 'EMAIL' | translate }}"
+            label-placement="floating"
+            placeholder="{{ 'EMAIL' | translate }}"
+            type="email"
+            formControlName="email"
+            maxlength="120"
+          ></ion-input>
+
+          <ion-input
+            label="{{ 'PASSWORD' | translate }}"
+            label-placement="floating"
+            placeholder="{{ 'PASSWORD' | translate }}"
+            type="password"
+            formControlName="password"
+            maxlength="60"
+            [errorText]="registerForm.get('password')?.hasError('minlength')
+              ? ('VALIDATOR_MIN_LENGTH_X' | translate: { length: 5 })
+              : null"
+          ></ion-input>
+
+          <ion-button
+            (click)="registerOrganization()"
+            [disabled]="!registerForm.valid"
+          >
+            {{ 'REGISTER' | translate }}
+          </ion-button>
+
+          <input type="submit" class="submit-enter" />
+        </form>
       </div>
     </div>
   </div>

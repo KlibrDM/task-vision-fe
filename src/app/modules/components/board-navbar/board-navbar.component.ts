@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { personOutline, notificationsOutline, searchOutline } from 'ionicons/icons';
+import { personOutline, notificationsOutline, searchOutline, businessOutline } from 'ionicons/icons';
 import { SearchPopupComponent } from '../search-popup/search-popup.component';
+import { AuthService } from 'src/app/services/auth.service';
 
 interface navbarItem {
   code: string;
@@ -29,7 +30,7 @@ interface navbarItem {
     SearchPopupComponent,
   ]
 })
-export class BoardNavbarComponent {
+export class BoardNavbarComponent implements OnInit {
   navbarLeftItems: navbarItem[] = [
     {
       code: 'projects',
@@ -54,15 +55,39 @@ export class BoardNavbarComponent {
       action: () => this.goTo('/app/profile'),
     },
   ];
+  navbarOrganizationItem: navbarItem = {
+    code: 'organization',
+    icon: 'business-outline',
+    action: () => this.goTo('/app/organization'),
+  }
+  
 
   isSearchOpen = false;
 
   constructor(
+    private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
     private translate: TranslateService,
   ) {
-    addIcons({ personOutline, notificationsOutline, searchOutline });
+    addIcons({ personOutline, notificationsOutline, searchOutline, businessOutline });
+  }
+
+  ngOnInit(): void {
+    this.authService.currentUser.subscribe((user) => {
+      if (user && user.is_organization_controlled) {
+        const profileIndex = this.navbarRightItems.findIndex((item) => item.code === 'profile');
+        if (profileIndex !== -1) {
+          this.navbarRightItems.splice(profileIndex, 0, this.navbarOrganizationItem);
+        }
+      }
+      else {
+        const organizationIndex = this.navbarRightItems.findIndex((item) => item.code === 'organization');
+        if (organizationIndex !== -1) {
+          this.navbarRightItems.splice(organizationIndex, 1);
+        }
+      }
+    });
   }
 
   goTo(route: string) {
