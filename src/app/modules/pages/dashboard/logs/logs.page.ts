@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { BoardNavbarComponent } from 'src/app/modules/components/board-navbar/board-navbar.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { IUser, IUserPartner } from 'src/app/models/user';
@@ -15,7 +15,6 @@ import {
 } from 'ionicons/icons';
 import { GeneralHeaderComponent } from 'src/app/modules/components/general-header/general-header.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IProject } from 'src/app/models/project';
 import { combineLatest } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
@@ -51,16 +50,20 @@ export class LogsPage implements OnInit {
 
   forceRefreshLogs = Symbol('');
 
-  filterEntities = Object.values(LogEntities);
-  activeEntities = Object.values(LogEntities).filter(e => e !== LogEntities.ITEM);
+  filterEntities = Object.values(LogEntities).filter(e =>
+    e !== LogEntities.ORGANIZATION
+    && e !== LogEntities.USER
+  );
+  activeEntities = Object.values(LogEntities).filter(e =>
+    e !== LogEntities.ITEM
+    && e !== LogEntities.ORGANIZATION
+    && e !== LogEntities.USER
+  );
 
   constructor(
     private router: Router,
     private authService: AuthService,
     private projectService: ProjectService,
-    private translate: TranslateService,
-    private toastController: ToastController,
-    private alertController: AlertController,
     private itemService: ItemService,
     private sprintService: SprintService,
   ) {

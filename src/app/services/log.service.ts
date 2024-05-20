@@ -10,6 +10,7 @@ import { ILogData, LogEntities } from '../models/log';
 export class LogService {
   GET_LOGS_ENDPOINT = '/logs';
   GET_PROJECT_LOGS_ENDPOINT = '/logs/project';
+  GET_USER_LOGS_ENDPOINT = '/logs/user';
 
   constructor(
     private http: HttpClient
@@ -48,6 +49,23 @@ export class LogService {
     }
 
     return this.http.get<ILogData>(`${environment.api}${this.GET_PROJECT_LOGS_ENDPOINT}/${projectId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      params
+    });
+  }
+
+  getUserLogs(token: string, userId: string, offset?: number, limit?: number): Observable<ILogData> {
+    const params = {}
+    if (offset !== undefined) {
+      Object.assign(params, { offset });
+    }
+    if (limit !== undefined) {
+      Object.assign(params, { limit });
+    }
+
+    return this.http.get<ILogData>(`${environment.api}${this.GET_USER_LOGS_ENDPOINT}/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       },

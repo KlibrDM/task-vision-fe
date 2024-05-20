@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IUserPartner } from 'src/app/models/user';
+import { IUserOrganizationPartner, IUserPartner } from 'src/app/models/user';
 import { ILog, ILogAdditionalData, LogAction, LogEntities, LogTrigger } from 'src/app/models/log';
 import { ItemPropertyIconComponent } from '../item-property-icon/item-property-icon.component';
 
@@ -20,9 +20,9 @@ import { ItemPropertyIconComponent } from '../item-property-icon/item-property-i
 })
 export class LogsListComponent {
   @Input() logs?: (ILog & ILogAdditionalData)[] = [];
-  @Input() projectUsers?: IUserPartner[];
+  @Input() projectUsers?: (IUserPartner | IUserOrganizationPartner)[];
   @Input() idList?: { id: string, name: string }[];
-  @Input() isProjectLogs = false;
+  @Input() logsType: 'project' | 'entity' | 'user' = 'entity';
 
   LogTrigger = LogTrigger;
   LogEntities = LogEntities;

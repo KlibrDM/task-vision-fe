@@ -21,6 +21,8 @@ import { combineLatest } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 import { OrganizationService } from 'src/app/services/organization.service';
 import { IOrganization, OrganizationRole } from 'src/app/models/organization';
+import { LogEntities } from 'src/app/models/log';
+import { LogsControllerComponent } from 'src/app/modules/components/logs-controller/logs-controller.component';
 
 @Component({
   selector: 'app-organization',
@@ -36,6 +38,7 @@ import { IOrganization, OrganizationRole } from 'src/app/models/organization';
     GeneralHeaderComponent,
     MatTooltipModule,
     ReactiveFormsModule,
+    LogsControllerComponent,
   ]
 })
 export class OrganizationPage {
@@ -54,6 +57,7 @@ export class OrganizationPage {
 
   organizationRoles = Object.values(OrganizationRole).filter((role) => role !== OrganizationRole.OWNER);
   organizationRolesEnum = OrganizationRole;
+  logEntities = LogEntities;
 
   constructor(
     private router: Router,
@@ -229,5 +233,13 @@ export class OrganizationPage {
         }).then((toast) => toast.present());
       }
     });
+  }
+
+  generateIdList() {
+    const idList: {id: string, name: string}[] = this.organizationUsers!.map(e => ({
+      id: e._id,
+      name: e.first_name + ' ' + e.last_name
+    }));
+    return idList;
   }
 }

@@ -6,14 +6,14 @@
           <app-item-property-icon [property]="log.action" [inverse]="true"></app-item-property-icon>
         </div>
 
-        <div class="log-type" *ngIf="!isProjectLogs">
+        <div class="log-type" *ngIf="logsType !== 'project'">
           {{ log.action | translate }}
         </div>
-        <div class="log-type" *ngIf="isProjectLogs">
+        <div class="log-type" *ngIf="logsType === 'project'">
           {{ log.action | translate }} {{ log.affectedEntity | translate }}&nbsp;
         </div>
 
-        <div class="log-entity-name" *ngIf="isProjectLogs && log.affectedEntityName">
+        <div class="log-entity-name" *ngIf="logsType !== 'entity' && log.affectedEntityName">
           {{ log.affectedEntityName }}
         </div>
 

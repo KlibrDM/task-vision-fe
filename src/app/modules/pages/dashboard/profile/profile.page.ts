@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Languages } from 'src/app/models/constants';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastController } from '@ionic/angular/standalone';
+import { LogsControllerComponent } from 'src/app/modules/components/logs-controller/logs-controller.component';
 
 @Component({
   selector: 'app-profile',
@@ -26,6 +27,7 @@ import { ToastController } from '@ionic/angular/standalone';
     BoardNavbarComponent,
     GeneralHeaderComponent,
     MatTooltipModule,
+    LogsControllerComponent,
   ]
 })
 export class ProfilePage {

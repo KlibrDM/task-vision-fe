@@ -4,7 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { refreshOutline } from 'ionicons/icons';
-import { IUser, IUserPartner } from 'src/app/models/user';
+import { IUser, IUserOrganizationPartner, IUserPartner } from 'src/app/models/user';
 import { ILog, ILogAdditionalData, LogEntities } from 'src/app/models/log';
 import { IProject } from 'src/app/models/project';
 import { LogService } from 'src/app/services/log.service';
@@ -30,10 +30,10 @@ export class LogsControllerComponent implements OnChanges {
   @Input() showOpenButton = true;
   @Input() user?: IUser;
   @Input() project?: IProject;
-  @Input() projectUsers?: IUserPartner[];
+  @Input() projectUsers?: (IUserPartner | IUserOrganizationPartner)[];
   @Input() idList?: { id: string, name: string }[];
   @Input() entityId?: string;
-  @Input() isProjectLogs = false;
+  @Input() logsType: 'project' | 'entity' | 'user' = 'entity';
   @Input() projectLogsEntities?: LogEntities[];
   @Input() forceRefreshLogs = Symbol('');
   @Input() limit = 10;
@@ -56,15 +56,20 @@ export class LogsControllerComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['entityId'] && changes['entityId'].currentValue) {
-      this.getLogsForEntityId(changes['entityId'].currentValue);
+      if (this.logsType === 'entity') {
+        this.getLogsForEntityId(changes['entityId'].currentValue);
+      }
+      else if (this.logsType === 'user') {
+        this.getUserLogs(changes['entityId'].currentValue);
+      }
     }
-    if (changes['isProjectLogs'] && changes['isProjectLogs'].currentValue) {
+    if (changes['logsType'] && changes['logsType']?.currentValue === 'project') {
       this.getProjectLogs();
     }
-    if (this.isProjectLogs && changes['projectLogsEntities'] && changes['projectLogsEntities'].currentValue) {
+    if (this.logsType === 'project' && changes['projectLogsEntities'] && changes['projectLogsEntities'].currentValue) {
       this.getProjectLogs();
     }
-    if (this.isProjectLogs && changes['project'] && changes['project'].currentValue) {
+    if (this.logsType === 'project' && changes['project'] && changes['project'].currentValue) {
       this.getProjectLogs();
     }
     if (changes['forceRefreshLogs'] && changes['forceRefreshLogs'].currentValue) {
@@ -74,7 +79,7 @@ export class LogsControllerComponent implements OnChanges {
   }
 
   getLogsForEntityId(entityId: string) {
-    if (this.user && this.project) {
+    if (this.user) {
       this.logService.getLogs(this.user!.access_token!, entityId, this.offset, this.limit).subscribe({
         next: (data) => {
           this.logs = this.processLogs(data.logs);
@@ -96,6 +101,26 @@ export class LogsControllerComponent implements OnChanges {
   getProjectLogs() {
     if (this.user && this.project) {
       this.logService.getProjectLogs(this.user!.access_token!, this.project._id, this.offset, this.limit, this.projectLogsEntities).subscribe({
+        next: (data) => {
+          this.logs = this.processLogs(data.logs);
+          this.logsCount = data.count;
+        },
+        error: () => {
+          this.logs = [];
+          this.logsCount = 0;
+          this.toastController.create({
+            message: this.translate.instant('ERROR_FETCHING_LOGS'),
+            duration: 4000,
+            color: 'danger'
+          }).then((toast) => toast.present());
+        }
+      });
+    }
+  }
+
+  getUserLogs(entityId: string) {
+    if (this.user) {
+      this.logService.getUserLogs(this.user!.access_token!, entityId, this.offset, this.limit).subscribe({
         next: (data) => {
           this.logs = this.processLogs(data.logs);
           this.logsCount = data.count;
@@ -177,46 +202,36 @@ export class LogsControllerComponent implements OnChanges {
     this.isOpen = !this.isOpen;
 
     if (this.isOpen) {
-      if (this.isProjectLogs) {
-        this.getProjectLogs();
-      }
-      else {
-        this.getLogsForEntityId(this.entityId!);
-      }
+      this.recallGetLogs();
     }
   }
 
   refreshLogs() {
-    if (this.isProjectLogs) {
-      this.getProjectLogs();
-    }
-    else {
-      this.getLogsForEntityId(this.entityId!);
-    }
+    this.recallGetLogs();
   }
 
   onPageChange(page: number) {
     this.currentPage = page;
     this.offset = (page - 1) * this.limit;
-
-    if (this.isProjectLogs) {
-      this.getProjectLogs();
-    }
-    else {
-      this.getLogsForEntityId(this.entityId!);
-    }
+    this.recallGetLogs();
   }
 
   onLimitChange(limit: number) {
     this.limit = limit;
     this.offset = 0;
     this.currentPage = 1;
+    this.recallGetLogs();
+  }
 
-    if (this.isProjectLogs) {
+  recallGetLogs() {
+    if (this.logsType === 'project') {
       this.getProjectLogs();
     }
-    else {
+    else if (this.logsType === 'entity') {
       this.getLogsForEntityId(this.entityId!);
+    }
+    else if (this.logsType === 'user') {
+      this.getUserLogs(this.entityId!);
     }
   }
 }

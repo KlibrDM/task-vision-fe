@@ -17,6 +17,13 @@
           <app-general-header
             name="{{ 'NAME_PROFILE' | translate: { name: user.first_name + ' ' + user.last_name } }}"
           ></app-general-header>
+          <ion-button
+            color="danger"
+            class="logout-button"
+            (click)="onLogout()"
+          >
+            {{ 'LOGOUT' | translate }}
+          </ion-button>
         </div>
 
         <div class="profile-cards">
@@ -229,13 +236,26 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-button
-            color="danger"
-            class="logout-button"
-            (click)="onLogout()"
-          >
-            {{ 'LOGOUT' | translate }}
-          </ion-button>
+          <!-- LOGS CARD -->
+          <ion-card class="logs-card" >
+            <ion-card-header>
+              <ion-card-title>
+                {{ 'LOGS' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <app-logs-controller
+                *ngIf="user"
+                [isOpen]="true"
+                [showOpenButton]="false"
+                [user]="user"
+                [logsType]="'user'"
+                [entityId]="user._id"
+                [limit]="10"
+              ></app-logs-controller>
+            </ion-card-content>
+          </ion-card>
         </div>
       </div>
     </div>
