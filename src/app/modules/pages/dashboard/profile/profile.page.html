@@ -244,6 +244,21 @@
               </ion-card-title>
             </ion-card-header>
 
+            <div class="filters">
+              <div
+                *ngFor="let entity of filterEntities"
+                class="filter"
+              >
+                <ion-checkbox
+                  labelPlacement="end"
+                  [checked]="activeEntities.includes(entity)"
+                  (ionChange)="toggleFilterEntity(entity)"
+                >
+                  {{ entity | translate }}
+                </ion-checkbox>
+              </div>
+            </div>
+
             <ion-card-content>
               <app-logs-controller
                 *ngIf="user"
@@ -252,6 +267,7 @@
                 [user]="user"
                 [logsType]="'user'"
                 [entityId]="user._id"
+                [logsEntities]="activeEntities"
                 [limit]="10"
               ></app-logs-controller>
             </ion-card-content>

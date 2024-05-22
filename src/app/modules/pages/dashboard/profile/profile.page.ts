@@ -13,6 +13,7 @@ import { Languages } from 'src/app/models/constants';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastController } from '@ionic/angular/standalone';
 import { LogsControllerComponent } from 'src/app/modules/components/logs-controller/logs-controller.component';
+import { LogEntities } from 'src/app/models/log';
 
 @Component({
   selector: 'app-profile',
@@ -48,7 +49,11 @@ export class ProfilePage {
   confirmPassword = '';
   passwordErrorText = '';
 
+  filterEntities = Object.values(LogEntities);
+  activeEntities = Object.values(LogEntities);
+
   languages = Languages;
+  logEntities = LogEntities;
 
   constructor(
     private router: Router,
@@ -193,6 +198,15 @@ export class ProfilePage {
         }
       }
     });
+  }
+
+  toggleFilterEntity(entity: LogEntities) {
+    if (this.activeEntities.includes(entity)) {
+      this.activeEntities = this.activeEntities.filter(e => e !== entity);
+    }
+    else {
+      this.activeEntities = [...this.activeEntities, entity];
+    }
   }
 
   onLogout() {

@@ -34,7 +34,7 @@ export class LogsControllerComponent implements OnChanges {
   @Input() idList?: { id: string, name: string }[];
   @Input() entityId?: string;
   @Input() logsType: 'project' | 'entity' | 'user' = 'entity';
-  @Input() projectLogsEntities?: LogEntities[];
+  @Input() logsEntities?: LogEntities[];
   @Input() forceRefreshLogs = Symbol('');
   @Input() limit = 10;
 
@@ -63,10 +63,13 @@ export class LogsControllerComponent implements OnChanges {
         this.getUserLogs(changes['entityId'].currentValue);
       }
     }
+    if (this.logsType === 'user' && changes['logsEntities'] && changes['logsEntities'].currentValue) {
+      this.getUserLogs(this.entityId!);
+    }
     if (changes['logsType'] && changes['logsType']?.currentValue === 'project') {
       this.getProjectLogs();
     }
-    if (this.logsType === 'project' && changes['projectLogsEntities'] && changes['projectLogsEntities'].currentValue) {
+    if (this.logsType === 'project' && changes['logsEntities'] && changes['logsEntities'].currentValue) {
       this.getProjectLogs();
     }
     if (this.logsType === 'project' && changes['project'] && changes['project'].currentValue) {
@@ -100,7 +103,7 @@ export class LogsControllerComponent implements OnChanges {
 
   getProjectLogs() {
     if (this.user && this.project) {
-      this.logService.getProjectLogs(this.user!.access_token!, this.project._id, this.offset, this.limit, this.projectLogsEntities).subscribe({
+      this.logService.getProjectLogs(this.user!.access_token!, this.project._id, this.offset, this.limit, this.logsEntities).subscribe({
         next: (data) => {
           this.logs = this.processLogs(data.logs);
           this.logsCount = data.count;
@@ -120,7 +123,7 @@ export class LogsControllerComponent implements OnChanges {
 
   getUserLogs(entityId: string) {
     if (this.user) {
-      this.logService.getUserLogs(this.user!.access_token!, entityId, this.offset, this.limit).subscribe({
+      this.logService.getUserLogs(this.user!.access_token!, entityId, this.offset, this.limit, this.logsEntities).subscribe({
         next: (data) => {
           this.logs = this.processLogs(data.logs);
           this.logsCount = data.count;

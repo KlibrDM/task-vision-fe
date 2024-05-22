@@ -63,4 +63,20 @@ ion-content {
       margin-left: 16px;
     }
   }
+
+  .logs-card {
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 8px 16px;
+      margin-left: 16px;
+
+      .filter {
+        ion-checkbox::part(label) {
+          margin-inline-start: 8px !important;
+        }
+      }
+    }
+  }
 }

@@ -56,13 +56,16 @@ export class LogService {
     });
   }
 
-  getUserLogs(token: string, userId: string, offset?: number, limit?: number): Observable<ILogData> {
+  getUserLogs(token: string, userId: string, offset?: number, limit?: number, entities?: LogEntities[]): Observable<ILogData> {
     const params = {}
     if (offset !== undefined) {
       Object.assign(params, { offset });
     }
     if (limit !== undefined) {
       Object.assign(params, { limit });
+    }
+    if (entities) {
+      Object.assign(params, { entities });
     }
 
     return this.http.get<ILogData>(`${environment.api}${this.GET_USER_LOGS_ENDPOINT}/${userId}`, {
