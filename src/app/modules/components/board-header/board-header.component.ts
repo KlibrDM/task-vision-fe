@@ -15,7 +15,6 @@ export class BoardHeaderComponent {
   @Input() parent?: string;
   @Input() projectName?: string;
   @Output() onlyMineClick = new EventEmitter();
-  @Output() filtersClick = new EventEmitter();
   @Output() createItemClick = new EventEmitter();
 
   showOnlyMineState = false;
@@ -24,10 +23,6 @@ export class BoardHeaderComponent {
 
   onOnlyMineClicked() {
     this.onlyMineClick.emit(!this.showOnlyMineState);
-  }
-
-  onFiltersClicked() {
-    this.filtersClick.emit();
   }
 
   onCreateItemClicked() {

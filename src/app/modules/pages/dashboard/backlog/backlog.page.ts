@@ -22,7 +22,6 @@ import { ItemListComponent } from 'src/app/modules/components/item-list/item-lis
 import { SocketService } from 'src/app/services/socket.service';
 import { WS_CLIENT_EVENTS } from 'src/app/models/ws';
 import { DocsService } from 'src/app/services/docs.service';
-import { AlertController } from '@ionic/angular/standalone';
 
 interface BacklogView {
   name: string,
@@ -78,7 +77,6 @@ export class BacklogPage {
     private translate: TranslateService,
     private socketService: SocketService,
     private docsService: DocsService,
-    private alertController: AlertController,
   ) {}
 
   ionViewWillEnter() {
@@ -295,14 +293,6 @@ export class BacklogPage {
         this.docsService.uploadItemAttachments(this.user?.access_token || '', this.project!._id, item._id, formData).subscribe();
       }
     });
-  }
-
-  // Filters
-  onFiltersClick() {
-    this.alertController.create({
-      header: this.translate.instant('COMING_SOON'),
-      buttons: [this.translate.instant('OK')]
-    }).then((alert) => alert.present());
   }
 
   onWebSocketItemUpdate(item: IItem) {
