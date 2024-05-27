@@ -73,7 +73,7 @@ export class ProjectsPage {
   }
 
   goToBoard(project: IProject) {
-    this.projectService.setActiveProjectId(project._id);
+    this.projectService.setActiveProjectId(this.user!.access_token!, project._id);
     this.projectService.setCurrentProject(project, this.user?._id!);
     this.router.navigate([`/app/board/`]);
   }

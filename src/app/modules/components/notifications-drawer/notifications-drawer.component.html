@@ -1,0 +1,21 @@
+<div class="notifications-drawer-container" (click)="onBackdropClick()">
+  <div class="notifications-drawer" (click)="onContentClick($event)">
+    <div class="notifications-drawer-header">
+      <h2>{{ 'NOTIFICATIONS' | translate }}</h2>
+      <ion-button (click)="onCloseClick()" size="small" color="light">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <div class="notifications-drawer-content" *ngIf="user && notifications?.length">
+      <app-notification-card
+        *ngFor="let notification of notifications"
+        [notification]="notification"
+        [currentUserId]="user._id"
+        [projectUsers]="projectUsers"
+      ></app-notification-card>
+    </div>
+    <div class="notifications-drawer-empty" *ngIf="!notifications?.length">
+      <p>{{ 'NO_NOTIFICATIONS' | translate }}</p>
+    </div>
+  </div>
+</div>

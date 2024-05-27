@@ -1,0 +1,81 @@
+<div
+  *ngIf="notification"
+  class="notification-card"
+  [class.notification-card-unread]="!notification.is_read"
+>
+  <div class="notification-header" *ngIf="notification.createdAt">
+    {{ notification.createdAt | timeAgo }}
+    <span *ngIf="!notification.is_read" class="notification-new-text">{{ 'NEW' | translate }}</span>
+  </div>
+
+  <div class="notification-content">
+    <div *ngIf="notification.notification_type === notificationType.ASSIGNMENT">
+      {{ 
+        'NOTIFICATION_ASSIGNMENT' | translate: {
+          name: notification.entity_name,
+          trigger: getUserNameAtId(notification.triggerId),
+          target:  notification.userId === currentUserId
+            ? ('YOU' | translate)
+            : getUserNameAtId(notification.userId),
+        }
+      }}
+      <a *ngIf="notification.entityId" [routerLink]="['/app/item/' + notification.entityId]">
+        {{ 'SEE_ITEM' | translate }}
+      </a>
+    </div>
+
+    <div *ngIf="notification.notification_type === notificationType.ITEM">
+      {{ 
+        'NOTIFICATION_ITEM' | translate: {
+          name: notification.entity_name,
+          trigger: getUserNameAtId(notification.triggerId),
+        }
+      }}
+      <a *ngIf="notification.entityId" [routerLink]="['/app/item/' + notification.entityId]">
+        {{ 'SEE_ITEM' | translate }}
+      </a>
+    </div>
+
+    <div *ngIf="notification.notification_type === notificationType.COMMENT">
+      {{ 
+        'NOTIFICATION_COMMENT' | translate: {
+          name: notification.entity_name,
+          trigger: getUserNameAtId(notification.triggerId),
+        }
+      }}
+      <a *ngIf="notification.entityId" [routerLink]="['/app/item/' + notification.entityId]">
+        {{ 'SEE_ITEM' | translate }}
+      </a>
+    </div>
+
+    <div *ngIf="notification.notification_type === notificationType.MENTION">
+      {{ 
+        'NOTIFICATION_MENTION' | translate: {
+          name: notification.entity_name,
+          trigger: getUserNameAtId(notification.triggerId),
+        }
+      }}
+      <a *ngIf="notification.entityId" [routerLink]="['/app/item/' + notification.entityId]">
+        {{ 'SEE_ITEM' | translate }}
+      </a>
+    </div>
+
+    <div *ngIf="notification.notification_type === notificationType.SPRINT_START">
+      {{ 
+        'NOTIFICATION_SPRINT_START' | translate: {
+          name: notification.entity_name,
+          trigger: getUserNameAtId(notification.triggerId),
+        }
+      }}
+    </div>
+
+    <div *ngIf="notification.notification_type === notificationType.SPRINT_COMPLETE">
+      {{ 
+        'NOTIFICATION_SPRINT_COMPLETE' | translate: {
+          name: notification.entity_name,
+          trigger: getUserNameAtId(notification.triggerId),
+        }
+      }}
+    </div>
+  </div>
+</div>

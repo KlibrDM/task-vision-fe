@@ -157,7 +157,7 @@ export class ChartsPage {
         this.router.navigate(['app/projects']);
         return;
       }
-      this.projectService.setActiveProjectId(id);
+      this.projectService.setActiveProjectId(this.user!.access_token!, id);
 
       this.projectService.currentProject.pipe(first()).subscribe((project) => {
         if (project) {

@@ -26,6 +26,9 @@
   --chart-element-selected-color: #f3f3f3;
   --chart-element-selected-text-color: #000000;
   --chart-element-text-color: #363636;
+
+  --notification-unread-background-color: #dcf2ff;
+  --notification-new-text-color: #aa0a0a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -57,5 +60,8 @@
     --chart-element-selected-color: #242424;
     --chart-element-selected-text-color: #ffffff;
     --chart-element-text-color: #d3d3d3;
+
+    --notification-unread-background-color: #181818;
+    --notification-new-text-color: #d10d0d;
   }
 }

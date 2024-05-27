@@ -6,6 +6,7 @@ import { StorageService } from './storage.service';
 import { IProject, IProjectPayload } from '../models/project';
 import { IUserPartner } from '../models/user';
 import { SocketService } from './socket.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +27,8 @@ export class ProjectService {
   constructor(
     private http: HttpClient,
     private storage: StorageService,
-    private socketSerive: SocketService
+    private socketSerive: SocketService,
+    private notificationService: NotificationService,
   ) { }
 
   getProjects(token: string): Observable<IProject[]> {
@@ -97,9 +99,12 @@ export class ProjectService {
     return from(this.storage.get('activeProjectId'));
   }
 
-  setActiveProjectId(id: string) {
+  setActiveProjectId(token: string, id: string) {
     this.activeProjectId.next(id);
     this.storage.set('activeProjectId', id);
+
+    // Get unread notifications count for the new active project
+    this.notificationService.updateUnreadCountOnProjectChange(token, id);
   }
 
   setCurrentProject(project: IProject, userId: string) {

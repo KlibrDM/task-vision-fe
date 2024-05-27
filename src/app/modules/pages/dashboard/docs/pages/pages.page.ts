@@ -91,7 +91,7 @@ export class PagesPage {
         this.router.navigate(['app/projects']);
         return;
       }
-      this.projectService.setActiveProjectId(id);
+      this.projectService.setActiveProjectId(this.user!.access_token!, id);
       this.socketService.changeActiveCollabDoc(this.user!._id, this.docId!);
 
       this.projectService.currentProject.subscribe((project) => {

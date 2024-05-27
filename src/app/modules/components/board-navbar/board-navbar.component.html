@@ -17,6 +17,7 @@
         [name]="item.icon"
         [slot]="!item.translation_code ? 'icon-only' : 'start'"
       ></ion-icon>
+      <ion-badge *ngIf="item.badge_number" color="danger">{{ item.badge_number }}</ion-badge>
       <span *ngIf="item.translation_code">{{ item.translation_code | translate }}</span>
     </ion-button>
   </ion-buttons>
@@ -26,3 +27,8 @@
   *ngIf="isSearchOpen"
   (closePopup)="closeSearch()"
 ></app-search-popup>
+
+<app-notifications-drawer
+  *ngIf="isNotificationsOpen"
+  (closeNotifications)="closeNotifications()"
+></app-notifications-drawer>

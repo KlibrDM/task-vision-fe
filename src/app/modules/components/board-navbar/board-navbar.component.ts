@@ -3,17 +3,21 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AlertController } from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import { personOutline, notificationsOutline, searchOutline, businessOutline } from 'ionicons/icons';
 import { SearchPopupComponent } from '../search-popup/search-popup.component';
 import { AuthService } from 'src/app/services/auth.service';
+import { NotificationsDrawerComponent } from '../notifications-drawer/notifications-drawer.component';
+import { NotificationService } from 'src/app/services/notification.service';
+import { SocketService } from 'src/app/services/socket.service';
+import { WS_CLIENT_EVENTS } from 'src/app/models/ws';
 
 interface navbarItem {
   code: string;
   translation_code?: string;
   icon?: string;
+  badge_number?: number;
   action: () => void;
 }
 
@@ -28,6 +32,7 @@ interface navbarItem {
     FormsModule,
     TranslateModule,
     SearchPopupComponent,
+    NotificationsDrawerComponent,
   ]
 })
 export class BoardNavbarComponent implements OnInit {
@@ -47,6 +52,7 @@ export class BoardNavbarComponent implements OnInit {
     {
       code: 'notifications',
       icon: 'notifications-outline',
+      badge_number: 0,
       action: () => this.openNotifications(),
     },
     {
@@ -61,14 +67,14 @@ export class BoardNavbarComponent implements OnInit {
     action: () => this.goTo('/app/organization'),
   }
   
-
   isSearchOpen = false;
+  isNotificationsOpen = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private alertController: AlertController,
-    private translate: TranslateService,
+    private notificationService: NotificationService,
+    private socketService: SocketService,
   ) {
     addIcons({ personOutline, notificationsOutline, searchOutline, businessOutline });
   }
@@ -88,6 +94,18 @@ export class BoardNavbarComponent implements OnInit {
         }
       }
     });
+
+    this.notificationService.unreadCount.subscribe((count) => {
+      this.navbarRightItems.find((item) => item.code === 'notifications')!.badge_number = count;
+    });
+
+    this.socketService.serverMessage.subscribe((message) => {
+      if (message.event === WS_CLIENT_EVENTS.NEW_NOTIFICATION) {
+        if (!this.isNotificationsOpen) {
+          this.notificationService.increaseUnreadCount();
+        }
+      }
+    });
   }
 
   goTo(route: string) {
@@ -95,10 +113,11 @@ export class BoardNavbarComponent implements OnInit {
   }
 
   openNotifications() {
-    this.alertController.create({
-      header: this.translate.instant('COMING_SOON'),
-      buttons: [this.translate.instant('OK')]
-    }).then((alert) => alert.present());
+    this.isNotificationsOpen = !this.isNotificationsOpen;
+  }
+
+  closeNotifications() {
+    this.isNotificationsOpen = false;
   }
 
   openSearch() {

@@ -96,7 +96,7 @@ export class BacklogPage {
         this.router.navigate(['app/projects']);
         return;
       }
-      this.projectService.setActiveProjectId(id);
+      this.projectService.setActiveProjectId(this.user!.access_token!, id);
 
       this.projectService.currentProject.subscribe((project) => {
         if (project) {

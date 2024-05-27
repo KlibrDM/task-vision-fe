@@ -1,0 +1,17 @@
+.notification-card {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: var(--item-card-color);
+  box-shadow: var(--item-shadow);
+}
+
+.notification-card-unread {
+  background-color: var(--notification-unread-background-color);
+}
+
+.notification-header {
+  .notification-new-text {
+    color: var(--notification-new-text-color);
+    font-weight: 600;
+  }
+}
