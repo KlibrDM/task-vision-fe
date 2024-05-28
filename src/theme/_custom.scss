@@ -1,6 +1,6 @@
 :root {
   --main-bg-color: #f4f5f8;
-  --main-bg-gradient: linear-gradient(180deg, #dde7ec 0%, #f1f1f8 30%, #eee5fd 100%, #d7c6ec 100%, #7a7b7c 100%);
+  --main-bg-gradient: linear-gradient(180deg, #ebf5fa 0%, #fafdff 20%, #fafdff 50%, #e7f3ff 100%);
 
   --item-full-bg-color: #fff;
   --item-bg-color: #ffffff;
@@ -34,7 +34,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --main-bg-color: #272727;
-    --main-bg-gradient: linear-gradient(180deg, #393c3d 0%, #29292c 30%, #312f33 100%, #2d2b30 100%, #282929 100%);
+    --main-bg-gradient: linear-gradient(180deg, #393c3d 0%, #29292c 30%, #312f33 100%);
   
     --item-full-bg-color: #010409;
     --item-bg-color: #010409;
