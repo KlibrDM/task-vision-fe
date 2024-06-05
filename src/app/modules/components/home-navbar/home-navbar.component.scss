@@ -2,3 +2,13 @@ ion-button ion-icon {
   margin-right: 6px;
   margin-bottom: 2px;
 }
+
+.display-none {
+  display: none;
+}
+
+@media screen and (max-width: 512px) {
+  ion-button ion-icon {
+    display: none;
+  }
+}

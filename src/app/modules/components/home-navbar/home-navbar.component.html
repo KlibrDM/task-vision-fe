@@ -3,19 +3,37 @@
     <ion-title>{{ 'TASK_VISION' | translate }}</ion-title>
     <ion-button
       *ngFor="let item of navbarLeftItems"
-      (click)="goTo(item.link)"
+      (click)="item.action()"
     >
       {{ item.translation_code | translate }}
     </ion-button>
   </ion-buttons>
 
-  <ion-buttons slot="end" *ngIf="showLogin">
-    <ion-button
-      *ngFor="let item of navbarRightItems"
-      (click)="goTo(item.link)"
-    >
-      <ion-icon [name]="item.icon"></ion-icon>
-      {{ item.translation_code | translate }}
-    </ion-button>
+  <ion-buttons slot="end">
+    <ng-container *ngFor="let item of navbarRightItems">
+      <ion-button
+        *ngIf="item.code !== 'login' || (item.code === 'login' && showLogin)"
+        (click)="item.action()"
+      >
+        <ion-icon [name]="item.icon"></ion-icon>
+        {{ item.translation_code | translate }}
+      </ion-button>
+    </ng-container>
   </ion-buttons>
 </ion-toolbar>
+
+<ion-select
+  class="display-none"
+  #languageSelect
+  label="{{ 'LANGUAGE' | translate }}"
+  justify="start"
+  [(ngModel)]="language"
+  (ngModelChange)="onLanguageChange($event)"
+>
+  <ion-select-option
+    *ngFor="let language of languages"
+    value="{{ language.code }}"
+  >
+    {{ language.name }}
+  </ion-select-option>
+</ion-select>
