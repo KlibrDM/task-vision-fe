@@ -32,7 +32,7 @@ export class LoginPage implements OnInit {
     this.auth.currentUser.subscribe((user) => {
       if (user) {
         this.router.navigate([
-          user.projects?.length ? '/app/board' : '/app/projects'
+          user.active_projectId ? '/app/board' : '/app/projects'
         ]);
       }
     });

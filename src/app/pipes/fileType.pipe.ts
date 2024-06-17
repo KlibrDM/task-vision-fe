@@ -27,6 +27,8 @@ export class FileTypePipe implements PipeTransform {
         return "ODP";
       case "application/pdf":
         return "PDF";
+      case "text/csv":
+        return "CSV";
       case "text/plain":
         return "TXT";
       case "application/zip":

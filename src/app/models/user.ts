@@ -17,10 +17,6 @@ export interface IUser {
   password: string;
   is_organization_controlled: boolean;
   organizationId?: string;
-  projects?: {
-    projectId: string;
-    role: ProjectRole;
-  }[];
   active_projectId?: string;
   settings: IUserSettings;
   is_active: boolean;

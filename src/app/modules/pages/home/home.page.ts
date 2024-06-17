@@ -58,7 +58,7 @@ export class HomePage implements OnInit {
   goToBoard() {
     if (this.user) {
       this.router.navigate([
-        this.user.projects?.length ? '/app/board' : '/app/projects'
+        this.user.active_projectId ? '/app/board' : '/app/projects'
       ]);
     }
   }
