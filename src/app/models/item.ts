@@ -114,6 +114,7 @@ export interface IAIItemSummaryPayload {
   name: string;
   description: string;
   type: ItemType;
+  language: string;
   epicId?: string;
 }
 

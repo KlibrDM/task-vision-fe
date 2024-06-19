@@ -14,6 +14,7 @@ import { ISprint } from 'src/app/models/sprint';
 import { ItemPropertyIconComponent } from '../item-property-icon/item-property-icon.component';
 import { ItemService } from 'src/app/services/item.service';
 import moment from 'moment';
+import { Languages } from 'src/app/models/constants';
 
 @Component({
   selector: 'app-item-create-modal',
@@ -55,6 +56,7 @@ export class ItemCreateModalComponent implements OnChanges {
   name = '';
   description = '';
   aiSummary = '';
+  aiLanguage = 'en';
   complexity?: number;
   estimate?: number;
   priority = ItemPriority.MEDIUM;
@@ -79,6 +81,8 @@ export class ItemCreateModalComponent implements OnChanges {
   descriptionMD: string = '';
   selectedFiles: File[] = [];
 
+  languages = Languages;
+
   @ViewChild('fileInput') fileInput?: ElementRef;
 
   constructor(
@@ -87,6 +91,7 @@ export class ItemCreateModalComponent implements OnChanges {
     private itemService: ItemService,
   ) {
     addIcons({ addCircleOutline, closeOutline, sparklesOutline });
+    this.aiLanguage = this.translate.currentLang;
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -186,6 +191,7 @@ export class ItemCreateModalComponent implements OnChanges {
     this.name = '';
     this.description = '';
     this.aiSummary = '';
+    this.aiLanguage = this.translate.currentLang;
     this.complexity = undefined;
     this.estimate = undefined;
     this.priority = ItemPriority.MEDIUM;
@@ -297,12 +303,15 @@ export class ItemCreateModalComponent implements OnChanges {
       return;
     }
 
+    const fullLanguageName = this.languages.find(e => e.code === this.aiLanguage)?.english_name || this.aiLanguage;
+
     this.isAISummaryGenerating = true;
 
     this.itemService.getItemAISummary(this.user!.access_token!, {
       name: this.name,
       description: this.description,
       type: this.type,
+      language: fullLanguageName,
       epicId: this.epicId.length ? this.epicId : undefined
     }).subscribe({
       next: (res) => {

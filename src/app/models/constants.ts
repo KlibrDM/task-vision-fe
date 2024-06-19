@@ -6,31 +6,37 @@ export const Languages = [
   {
     code: 'en',
     name: 'English',
+    english_name: 'English',
     translation_code: 'ENGLISH'
   },
   {
     code: 'de',
     name: 'Deutsch',
+    english_name: 'German',
     translation_code: 'GERMAN'
   },
   {
     code: 'fr',
     name: 'Français',
+    english_name: 'French',
     translation_code: 'FRENCH'
   },
   {
     code: 'es',
     name: 'Español',
+    english_name: 'Spanish',
     translation_code: 'SPANISH'
   },
   {
     code: 'ro',
     name: 'Română',
+    english_name: 'Romanian',
     translation_code: 'ROMANIAN'
   },
   {
     code: 'ru',
     name: 'Русский',
+    english_name: 'Russian',
     translation_code: 'RUSSIAN'
   }
 ]

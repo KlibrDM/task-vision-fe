@@ -18,6 +18,7 @@ import { WS_CLIENT_EVENTS } from 'src/app/models/ws';
 import { ICollabDoc } from 'src/app/models/collabDocs';
 import { sparklesOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import { Languages } from 'src/app/models/constants';
 
 @Component({
   selector: 'app-pages',
@@ -51,6 +52,7 @@ export class PagesPage {
   docAISummaryInput = '';
   docContentInput = '';
   docContentMD = '';
+  docAILanguage = 'en';
 
   contentQueryChanged: Subject<string> = new Subject<string>();
   isAISummaryGenerating = false;
@@ -58,6 +60,8 @@ export class PagesPage {
   allowEdit = false;
   activeUsers: string[] = [];
   editedBy?: string;
+
+  languages = Languages;
 
   constructor(
     private router: Router,
@@ -128,6 +132,8 @@ export class PagesPage {
     this.contentQueryChanged.pipe(debounceTime(300), distinctUntilChanged()).subscribe((content) => {
       this.getContentMD(content);
     });
+
+    this.docAILanguage = this.translate.currentLang;
   }
 
   ionViewWillLeave() {
@@ -229,11 +235,14 @@ export class PagesPage {
       return;
     }
 
+    const fullLanguageName = this.languages.find(e => e.code === this.docAILanguage)?.english_name || this.docAILanguage;
+
     this.isAISummaryGenerating = true;
 
     this.collabDocsService.getDocAISummary(this.user!.access_token!, {
       name: this.docNameInput,
-      content: this.docContentInput
+      content: this.docContentInput,
+      language: fullLanguageName,
     }).subscribe({
       next: (res) => {
         this.docAISummaryInput = res.summary;

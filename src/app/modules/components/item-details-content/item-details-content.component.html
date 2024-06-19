@@ -44,6 +44,21 @@
       <ion-spinner *ngIf="isAISummaryGenerating"></ion-spinner>
     </ion-item>
 
+    <ion-item *ngIf="allowEdit && !item.ai_summary">
+      <ion-select
+        label="{{ 'AI_SUMMARY_LANGUAGE' | translate }}"
+        justify="start"
+        [(ngModel)]="aiLanguage"
+      >
+        <ion-select-option
+          *ngFor="let language of languages"
+          value="{{ language.code }}"
+        >
+          {{ language.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
     <ion-item>
       <ion-label
         position="stacked"

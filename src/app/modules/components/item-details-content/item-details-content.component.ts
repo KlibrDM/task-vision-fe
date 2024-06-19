@@ -77,6 +77,7 @@ export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy
   });
   moment = moment;
   Constants = Constants;
+  languages = Constants.Languages;
   itemTypesEnum = ItemType;
   itemTypes = Object.values(ItemType);
   itemPriorities = Object.values(ItemPriority);
@@ -92,6 +93,7 @@ export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy
   columns: string[] = [];
   hoursLogged?: number;
   newComment = '';
+  aiLanguage = 'en';
 
   defaultRelation: IItemRelation = {
     type: ItemRelationType.RELATES_TO,
@@ -135,6 +137,8 @@ export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy
   }
 
   ngOnInit() {
+    this.aiLanguage = this.translate.currentLang;
+
     // Use structured clone to remove references
     this.item = structuredClone(this.item);
     this.items = structuredClone(this.items);
@@ -583,12 +587,15 @@ export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy
       return;
     }
 
+    const fullLanguageName = this.languages.find(e => e.code === this.aiLanguage)?.english_name || this.aiLanguage;
+
     this.isAISummaryGenerating = true;
 
     this.itemService.getItemAISummary(this.user!.access_token!, {
       name: this.item.name,
       description: this.item.description,
       type: this.item.type,
+      language: fullLanguageName,
       epicId: this.item.epicId?.length ? this.item.epicId : undefined
     }).subscribe({
       next: (res) => {

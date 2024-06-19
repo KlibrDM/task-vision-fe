@@ -25,4 +25,5 @@ export interface IAIDocSummary {
 export interface IAIDocSummaryPayload {
   name: string;
   content: string;
+  language: string;
 }
