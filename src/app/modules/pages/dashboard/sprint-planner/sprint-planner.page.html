@@ -79,7 +79,11 @@
                   {{ 'SPRINT_COMPLETED' | translate | uppercase }}
                 </div>
                 <div class="sprint-items-count">
-                  {{ 'X_ITEMS' | translate: {count: sprint.totalItems} }}
+                  {{
+                    sprint.totalItems === 1
+                      ? ('X_ITEM' | translate: {count: sprint.totalItems})
+                      : ('X_ITEMS' | translate: {count: sprint.totalItems})
+                  }}
                 </div>
                 <div class="sprint-items-divider"></div>
                 <div class="sprint-items-complexity">

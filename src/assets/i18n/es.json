@@ -494,6 +494,7 @@
   "X_HOURS": "{{hours}} horas",
   "X_HOURS_AGO": "{{hours}} horas atras",
   "X_IS_CURRENTLY_EDITING_THIS_PAGE": "{{name}} actualmente está editando esta página",
+  "X_ITEM": "{{count}} elemento",
   "X_ITEMS": "{{count}} elementos",
   "X_MEMBER": "{{count}} miembro",
   "X_MEMBERS": "{{count}} miembros",

@@ -152,6 +152,8 @@ export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy
     if (this.saveClicked) {
       this.saveClicked.subscribe(() => this.onSaveChangesClick());
     }
+
+    moment.locale(this.translate.currentLang);
   }
 
   ngOnDestroy() {

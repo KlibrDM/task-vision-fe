@@ -494,6 +494,7 @@
   "X_HOURS": "{{hours}} часы",
   "X_HOURS_AGO": "{{hours}} несколько часов назад",
   "X_IS_CURRENTLY_EDITING_THIS_PAGE": "{{name}} в настоящее время редактирует эту страницу",
+  "X_ITEM": "{{count}} предмет",
   "X_ITEMS": "{{count}} предметы",
   "X_MEMBER": "{{count}} член",
   "X_MEMBERS": "{{count}} члены",

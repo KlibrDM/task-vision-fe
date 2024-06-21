@@ -45,7 +45,13 @@
                 </ion-button>
               </div>
               <div class="user-header-items-count">
-                <p>{{ 'X_ITEMS' | translate: { count: user.itemsCount } }}</p>
+                <p>
+                  {{
+                    user.itemsCount === 1
+                      ? ('X_ITEM' | translate: {count: user.itemsCount})
+                      : ('X_ITEMS' | translate: {count: user.itemsCount})
+                  }}
+                </p>
               </div>
             </div>
             <div *ngIf="user.expanded" class="columns">

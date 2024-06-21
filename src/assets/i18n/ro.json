@@ -494,6 +494,7 @@
   "X_HOURS": "{{hours}} ore",
   "X_HOURS_AGO": "Acum {{hours}} ore",
   "X_IS_CURRENTLY_EDITING_THIS_PAGE": "{{name}} editează această pagină în prezent",
+  "X_ITEM": "{{count}} tichet",
   "X_ITEMS": "{{count}} tichete",
   "X_MEMBER": "{{count}} membru",
   "X_MEMBERS": "{{count}} membri",
