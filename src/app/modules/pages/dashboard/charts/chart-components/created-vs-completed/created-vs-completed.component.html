@@ -1,0 +1,56 @@
+<div>
+  <p>{{ 'CREATED_VS_COMPLETED_LONG_DESCRIPTION' | translate }}</p>
+
+  <ion-item>
+    <ion-input
+      label="{{ 'START_DATE' | translate }}"
+      value="{{ startDate }}"
+      id="start_date"
+    ></ion-input>
+    <ion-popover trigger="start_date" >
+      <ng-template>
+        <ion-datetime
+          presentation="date"
+          [(ngModel)]="startDate"
+          (ngModelChange)="onDateChange()"
+        ></ion-datetime>
+      </ng-template>
+    </ion-popover>
+  </ion-item>
+
+  <ion-item>
+    <ion-input
+      label="{{ 'END_DATE' | translate }}"
+      value="{{ endDate }}"
+      id="end_date"
+    ></ion-input>
+    <ion-popover trigger="end_date" >
+      <ng-template>
+        <ion-datetime
+        presentation="date"
+        [(ngModel)]="endDate"
+        (ngModelChange)="onDateChange()"
+      ></ion-datetime>
+      </ng-template>
+    </ion-popover>
+  </ion-item>
+
+  <p class="zoom-info">{{ 'ZOOM_AND_PAN_INFO' | translate }}</p>
+  <div class="canvas-container">
+    <canvas id="canvas">{{chart}}</canvas>
+  </div>
+
+  <div class="table" *ngIf="itemReport.length">
+    <h3>{{ 'ITEM_TYPE_CLASSIFICATION' | translate }}</h3>
+    <div class="table-entry" *ngFor="let entry of itemReport">
+      <div class="table-column">{{ 'TYPE' | translate }}: {{ entry.type | translate }}</div>
+      <div class="table-column">{{ 'CREATED' | translate }}: {{ entry.created }}</div>
+      <div class="table-column">{{ 'COMPLETED' | translate }}: {{ entry.completed }}</div>
+    </div>
+    <div class="table-entry totals" *ngIf="itemReportTotals">
+      <div class="table-column">{{ 'TOTAL' | translate }}</div>
+      <div class="table-column">{{ 'CREATED' | translate }}: {{ itemReportTotals.created }}</div>
+      <div class="table-column">{{ 'COMPLETED' | translate }}: {{ itemReportTotals.completed }}</div>
+    </div>
+  </div>
+</div>

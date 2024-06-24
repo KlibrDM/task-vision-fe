@@ -18,9 +18,16 @@ import { SprintService } from 'src/app/services/sprint.service';
 import { ItemService } from 'src/app/services/item.service';
 import { BurndownChartComponent } from './chart-components/burndown-chart/burndown-chart.component';
 import { BurnupChartComponent } from './chart-components/burnup-chart/burnup-chart.component';
-import { NotAvailableChartComponent } from './chart-components/not-available-chart/not-available-chart.component';
 import { SprintReportComponent } from './chart-components/sprint-report/sprint-report.component';
 import { VelocityChartComponent } from './chart-components/velocity-chart/velocity-chart.component';
+import { CumulativeFlowComponent } from './chart-components/cumulative-flow/cumulative-flow.component';
+import { HourTrackingComponent } from './chart-components/hour-tracking/hour-tracking.component';
+import { AverageAgeComponent } from './chart-components/average-age/average-age.component';
+import { EpicReportComponent } from './chart-components/epic-report/epic-report.component';
+import { CreatedVSCompletedComponent } from './chart-components/created-vs-completed/created-vs-completed.component';
+import { ItemTypeReportComponent } from './chart-components/item-type-report/item-type-report.component';
+import { ResolutionTimeComponent } from './chart-components/resolution-time/resolution-time.component';
+import { BugReportComponent } from './chart-components/bug-report/bug-report.component';
 
 interface IChartListItem {
   code: string;
@@ -58,49 +65,49 @@ const ChartList: IChartListItem[] = [
     code: 'cumulative_flow',
     translation_code: 'CUMULATIVE_FLOW_DIAGRAM',
     description_translation_code: 'CUMULATIVE_FLOW_DIAGRAM_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: CumulativeFlowComponent
   },
   {
     code: 'hour_tracking_report',
     translation_code: 'HOUR_TRACKING_REPORT',
     description_translation_code: 'HOUR_TRACKING_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: HourTrackingComponent
   },
   {
     code: 'average_age_report',
     translation_code: 'AVERAGE_AGE_REPORT',
     description_translation_code: 'AVERAGE_AGE_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: AverageAgeComponent
   },
   {
     code: 'epic_report',
     translation_code: 'EPIC_REPORT',
     description_translation_code: 'EPIC_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: EpicReportComponent
   },
   {
     code: 'created_vs_completed',
     translation_code: 'CREATED_VS_COMPLETED',
     description_translation_code: 'CREATED_VS_COMPLETED_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: CreatedVSCompletedComponent
   },
   {
     code: 'item_type_report',
     translation_code: 'ITEM_TYPE_REPORT',
     description_translation_code: 'ITEM_TYPE_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: ItemTypeReportComponent
   },
   {
     code: 'resolution_time_report',
     translation_code: 'RESOLUTION_TIME_REPORT',
     description_translation_code: 'RESOLUTION_TIME_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: ResolutionTimeComponent
   },
   {
     code: 'bug_report',
     translation_code: 'BUG_REPORT',
     description_translation_code: 'BUG_REPORT_SHORT_DESCRIPTION',
-    component: NotAvailableChartComponent
+    component: BugReportComponent
   }
 ];
 

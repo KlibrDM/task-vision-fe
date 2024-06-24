@@ -1,0 +1,83 @@
+<div>
+  <p>{{ 'EPIC_REPORT_LONG_DESCRIPTION' | translate }}</p>
+
+  <div class="epic-select">
+    <ion-item>
+      <ion-select
+        label="{{ 'EPIC' | translate }}"
+        [(ngModel)]="selectedEpic"
+        (ngModelChange)="onSelectedEpicChange()"
+        justify="start"
+      >
+        <ion-select-option
+          *ngFor="let epic of epics"
+          [value]="epic"
+        >
+          {{ epic.code + ' - ' + epic.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <div class="canvas-container">
+    <div *ngIf="noLinkedItemsWarning" class="warning-container">
+      <p>{{ 'NO_LINKED_ITEMS_FOUND' | translate }}</p>
+    </div>
+    <canvas id="canvas">{{chart}}</canvas>
+  </div>
+
+  <div class="table" *ngIf="unfinishedItemsReport.length">
+    <h3>{{ 'UNFINISHED_ITEMS' | translate }}</h3>
+    <div class="table-entry" *ngFor="let entry of unfinishedItemsReport">
+      <div class="table-column">
+        <div><a [routerLink]="['/app/item/' + entry.itemId]">{{ entry.itemCode }}</a></div>
+        &nbsp;
+        <div>{{ entry.itemName }}</div>
+      </div>
+      <div class="table-column">{{ 'COLUMN' | translate }}: {{ entry.itemColumn }}</div>
+      <div class="table-column">{{ 'TYPE' | translate }}: {{ entry.itemType | translate }}</div>
+      <div class="table-column">
+        {{ 'AGE' | translate }}:
+        {{
+          entry.itemAge === 1
+          ? ('X_DAY' | translate: { count: entry.itemAge})
+          : ('X_DAYS' | translate: { count: entry.itemAge})
+        }}
+      </div>
+      <div class="table-column" *ngIf="entry.itemEstimate">
+        <span class="estimate">
+          {{ 'ESTIMATE' | translate }}:
+          {{ 'X_HOURS' | translate: { hours: entry.itemEstimate } }}
+        </span>
+      </div>
+      <div class="table-column" *ngIf="entry.itemComplexity">
+        <span class="complexity">
+          {{ 'COMPLEXITY' | translate }}: {{ entry.itemComplexity }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table" *ngIf="completedItemsReport.length">
+    <h3>{{ 'COMPLETED_ITEMS' | translate }}</h3>
+    <div class="table-entry" *ngFor="let entry of completedItemsReport">
+      <div class="table-column">
+        <div><a [routerLink]="['/app/item/' + entry.itemId]">{{ entry.itemCode }}</a></div>
+        &nbsp;
+        <div>{{ entry.itemName }}</div>
+      </div>
+      <div class="table-column">{{ 'TYPE' | translate }}: {{ entry.itemType | translate }}</div>
+      <div class="table-column" *ngIf="entry.itemEstimate">
+        <span class="estimate">
+          {{ 'ESTIMATE' | translate }}:
+          {{ 'X_HOURS' | translate: { hours: entry.itemEstimate } }}
+        </span>
+      </div>
+      <div class="table-column" *ngIf="entry.itemComplexity">
+        <span class="complexity">
+          {{ 'COMPLEXITY' | translate }}: {{ entry.itemComplexity }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

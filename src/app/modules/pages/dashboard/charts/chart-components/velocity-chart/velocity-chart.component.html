@@ -5,6 +5,7 @@
       <ion-item>
         <ion-select
           label="{{ 'SPRINT' | translate }}"
+          placeholder="{{ 'NOT_SET' | translate }}"
           [(ngModel)]="selectedSprintIds"
           (ngModelChange)="onSprintChange($event)"
           multiple

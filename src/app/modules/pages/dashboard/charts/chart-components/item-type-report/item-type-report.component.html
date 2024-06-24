@@ -1,0 +1,50 @@
+<div>
+  <p>{{ 'ITEM_TYPE_REPORT_LONG_DESCRIPTION' | translate }}</p>
+
+  <div class="sprint-select">
+    <ion-item>
+      <ion-select
+        label="{{ 'SPRINT' | translate }}"
+        placeholder="{{ 'NOT_SET' | translate }}"
+        [(ngModel)]="selectedSprints"
+        (ngModelChange)="onSelectedSprintsChange()"
+        justify="start"
+        multiple
+      >
+        <ion-select-option
+          *ngFor="let sprint of sprints"
+          [value]="sprint"
+        >
+          {{ sprint.name | translate }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <div class="canvas-container">
+    <h2>
+      {{ 
+        totalItems === 1
+          ? ('X_ITEM' | translate: { count: totalItems })
+          : ('X_ITEMS' | translate: { count: totalItems })
+      }}
+    </h2>
+    <canvas id="canvas">{{chart}}</canvas>
+  </div>
+
+  <div class="table" *ngIf="itemReport.length">
+    <h3>{{ 'ITEM_TYPE_CLASSIFICATION' | translate }}</h3>
+    <div class="table-entry" *ngFor="let entry of itemReport">
+      <div class="table-column">{{ entry.type | translate }}</div>
+      <div class="table-column">{{ 'COUNT' | translate }}: {{ entry.count }}</div>
+      <div class="table-column">{{ 'UNFINISHED' | translate }}: {{ entry.unfinished }}</div>
+      <div class="table-column">{{ 'COMPLETED' | translate }}: {{ entry.completed }}</div>
+    </div>
+    <div class="table-entry totals" *ngIf="itemReportTotals">
+      <div class="table-column">{{ 'TOTAL' | translate }}</div>
+      <div class="table-column">{{ 'COUNT' | translate }}: {{ itemReportTotals.count }}</div>
+      <div class="table-column">{{ 'UNFINISHED' | translate }}: {{ itemReportTotals.unfinished }}</div>
+      <div class="table-column">{{ 'COMPLETED' | translate }}: {{ itemReportTotals.completed }}</div>
+    </div>
+  </div>
+</div>

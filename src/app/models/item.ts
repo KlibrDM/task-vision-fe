@@ -14,6 +14,22 @@ export enum ItemType {
   NON_FUNCTIONAL_REQUIREMENT = "NON_FUNCTIONAL_REQUIREMENT"
 }
 
+export const ItemTypeColorMap = {
+  'EPIC': '#ff842b',
+  'MILESTONE': '#8730ff',
+  'STORY': '#e3c710',
+  'FEATURE': '#039e18',
+  'SUB_FEATURE': '#6acc77',
+  'IMPROVEMENT': '#97c900',
+  'TASK': '#2f85ed',
+  'SUB_TASK': '#6cb0f0',
+  'BUG': '#d04337',
+  'TEST': '#2bffb5',
+  'CUSTOMER_REQUIREMENT': '#fb3ea8',
+  'FUNCTIONAL_REQUIREMENT': '#f25ab0',
+  'NON_FUNCTIONAL_REQUIREMENT': '#f27eca',
+}
+
 export enum ItemRelationType {
   RELATES_TO = "RELATES_TO", // applies both ways
   BLOCKS = "BLOCKS",

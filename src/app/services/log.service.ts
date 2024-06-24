@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { environment } from "src/environments/environment";
 import { Observable } from 'rxjs';
-import { ILogData, LogEntities } from '../models/log';
+import { ILog, ILogData, LogAction, LogEntities } from '../models/log';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +11,7 @@ export class LogService {
   GET_LOGS_ENDPOINT = '/logs';
   GET_PROJECT_LOGS_ENDPOINT = '/logs/project';
   GET_USER_LOGS_ENDPOINT = '/logs/user';
+  GET_FILTERED_LOGS_ENDPOINT = '/logs/filtered';
 
   constructor(
     private http: HttpClient
@@ -69,6 +70,40 @@ export class LogService {
     }
 
     return this.http.get<ILogData>(`${environment.api}${this.GET_USER_LOGS_ENDPOINT}/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      params
+    });
+  }
+
+  getFilteredLogs(
+    token: string,
+    projectId: string,
+    affectedEntities?: LogEntities[],
+    fields?: [string],
+    actions?: LogAction[],
+    startDate?: string,
+    endDate?: string
+  ): Observable<ILog[]> {
+    const params = {}
+    if (affectedEntities?.length) {
+      Object.assign(params, { affectedEntities });
+    }
+    if (fields?.length) {
+      Object.assign(params, { changedFields: fields });
+    }
+    if (actions?.length) {
+      Object.assign(params, { actions });
+    }
+    if (startDate) {
+      Object.assign(params, { startDate });
+    }
+    if (endDate) {
+      Object.assign(params, { endDate });
+    }
+
+    return this.http.get<ILog[]>(`${environment.api}${this.GET_FILTERED_LOGS_ENDPOINT}/${projectId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       },

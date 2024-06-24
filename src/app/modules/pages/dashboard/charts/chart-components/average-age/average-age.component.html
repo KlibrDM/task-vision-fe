@@ -1,0 +1,60 @@
+<div>
+  <p>{{ 'AVERAGE_AGE_REPORT_LONG_DESCRIPTION' | translate }}</p>
+
+  <div class="type-select">
+    <ion-item>
+      <ion-select
+        label="{{ 'ITEM_TYPE' | translate }}"
+        placeholder="{{ 'NOT_SET' | translate }}"
+        [(ngModel)]="selectedItemTypes"
+        (ngModelChange)="onItemTypesChange()"
+        justify="start"
+        multiple
+      >
+        <ion-select-option
+          *ngFor="let type of itemTypes"
+          [value]="type"
+        >
+          {{ type | translate }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="canvas">{{chart}}</canvas>
+  </div>
+
+  <div class="table" *ngIf="itemReport.length">
+    <h3>{{ 'ITEMS_PER_COLUMN' | translate }}</h3>
+    <div class="table-entry table-entry-no-wrap" *ngFor="let column of project?.board_columns">
+      <div class="table-column">
+        {{ column }}
+      </div>
+      <div class="table-column">
+        {{ itemsPerColumn[column] ? itemsPerColumn[column] : 0 }}
+      </div>
+    </div>
+  </div>
+
+  <div class="table" *ngIf="itemReport.length">
+    <h3>{{ 'ITEM_AGE' | translate }}</h3>
+    <div class="table-entry" *ngFor="let entry of itemReport">
+      <div class="table-column">
+        <div><a [routerLink]="['/app/item/' + entry.itemId]">{{ entry.itemCode }}</a></div>
+        &nbsp;
+        <div>{{ entry.itemName }}</div>
+      </div>
+      <div class="table-column">{{ 'COLUMN' | translate }}: {{ entry.itemColumn }}</div>
+      <div class="table-column">{{ 'TYPE' | translate }}: {{ entry.itemType | translate }}</div>
+      <div class="table-column">
+        {{ 'AGE' | translate }}:
+        {{
+          entry.itemAge === 1
+          ? ('X_DAY' | translate: { count: entry.itemAge})
+          : ('X_DAYS' | translate: { count: entry.itemAge})
+        }}
+      </div>
+    </div>
+  </div>
+</div>
