@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -41,7 +41,7 @@ interface ITableData {
     RouterModule,
   ]
 })
-export class BurnupChartComponent implements OnInit {
+export class BurnupChartComponent implements OnInit, OnDestroy {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -63,6 +63,10 @@ export class BurnupChartComponent implements OnInit {
     private translate: TranslateService,
     private chartDataService: ChartDataService,
   ) { }
+
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+  }
 
   ngOnInit(): void {
     const activeSprintId = this.project?.currentSprintId;

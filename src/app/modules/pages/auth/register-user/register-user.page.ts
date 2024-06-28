@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -7,6 +7,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { IUser, IUserRegisterPayload } from 'src/app/models/user';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular/standalone';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-register-user',
@@ -15,7 +16,9 @@ import { ToastController } from '@ionic/angular/standalone';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, TranslateModule, ReactiveFormsModule]
 })
-export class RegisterUserPage implements OnInit {
+export class RegisterUserPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   registerForm = new FormGroup({
     firstName: new FormControl('', [Validators.required, Validators.maxLength(60)]),
     lastName: new FormControl('', [Validators.required, Validators.maxLength(60)]),
@@ -30,14 +33,23 @@ export class RegisterUserPage implements OnInit {
     private translate: TranslateService,
   ) { }
 
-  ngOnInit() {
-    this.auth.currentUser.subscribe((user) => {
-      if (user) {
-        this.router.navigate([
-          user.active_projectId ? '/app/board' : '/app/projects'
-        ]);
-      }
-    });
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
+  ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
+    this.auth.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((user) => {
+        if (user) {
+          this.router.navigate([
+            user.active_projectId ? '/app/board' : '/app/projects'
+          ]);
+        }
+      });
   }
 
   registerUser() {

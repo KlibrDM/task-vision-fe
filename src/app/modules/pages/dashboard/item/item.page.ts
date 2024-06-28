@@ -10,7 +10,7 @@ import { IUser, IUserPartner } from 'src/app/models/user';
 import { ProjectService } from 'src/app/services/project.service';
 import { IProject } from 'src/app/models/project';
 import { IItem, ItemType } from 'src/app/models/item';
-import { Subject, combineLatest } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { addIcons } from 'ionicons';
 import {
   playForwardOutline,
@@ -40,6 +40,8 @@ import { WS_CLIENT_EVENTS } from 'src/app/models/ws';
   ]
 })
 export class ItemPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   project?: IProject;
   item?: IItem;
@@ -68,47 +70,60 @@ export class ItemPage {
     addIcons({ playForwardOutline, barChartOutline, personOutline, constructOutline});
   }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      // Get item ID from route
-      this.itemId = this.activatedRoute.snapshot.paramMap.get('id');
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        // Get item ID from route
+        this.itemId = this.activatedRoute.snapshot.paramMap.get('id');
 
-      if (!this.itemId) {
-        this.router.navigate(['app/board']);
-        return;
-      }
-
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.getProjectDetails(project._id);
+        if (!this.itemId) {
+          this.router.navigate(['app/board']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            this.getProjectDetails(project._id);
+
+        if (!user) {
+          this.router.navigate(['']);
+          return;
+        }
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.getProjectDetails(project._id);
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.getProjectDetails(project._id);
+                });
+            }
           });
-        }
       });
-    });
 
-    this.socketService.serverMessage.subscribe((message) => {
+    this.socketService.serverMessage.pipe(takeUntil(this.destroyed$)).subscribe((message) => {
       switch (message.event) {
         case WS_CLIENT_EVENTS.ITEM_CHANGED:
         case WS_CLIENT_EVENTS.ITEM_DELETED:
@@ -135,7 +150,7 @@ export class ItemPage {
       this.itemService.getItems(this.user!.access_token!, projectId),
       this.projectService.getProjectUsers(this.user!.access_token!, projectId),
       this.sprintService.getSprints(this.user!.access_token!, projectId)
-    ]).subscribe(([items, users, sprints]) => {
+    ]).pipe(takeUntil(this.destroyed$)).subscribe(([items, users, sprints]) => {
       this.items = items;
       this.item = items.find(i => i._id === this.itemId);
       this.epics = items.filter(e => e.type === ItemType.EPIC && !e.deleted);

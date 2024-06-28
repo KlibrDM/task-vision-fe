@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -9,7 +9,7 @@ import { IItem } from 'src/app/models/item';
 import { ISprint } from 'src/app/models/sprint';
 import { Chart } from 'chart.js/auto';
 import 'chartjs-adapter-moment';
-import { combineLatest } from 'rxjs';
+import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { ItemEstimateBadgeComponent } from 'src/app/modules/components/item-estimate-badge/item-estimate-badge.component';
 import { ItemPropertyIconComponent } from 'src/app/modules/components/item-property-icon/item-property-icon.component';
@@ -34,7 +34,9 @@ Chart.register(zoomPlugin);
     ItemPropertyIconComponent,
   ]
 })
-export class CumulativeFlowComponent implements OnInit {
+export class CumulativeFlowComponent implements OnInit, OnDestroy {
+  destroyed$: Subject<boolean> = new Subject();
+
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -51,6 +53,12 @@ export class CumulativeFlowComponent implements OnInit {
     private logService: LogService,
   ) { }
 
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ngOnInit() {
     combineLatest([
       this.logService.getFilteredLogs(
@@ -66,7 +74,7 @@ export class CumulativeFlowComponent implements OnInit {
         [LogEntities.ITEM],
         ['column']
       ),
-    ]).subscribe({
+    ]).pipe(takeUntil(this.destroyed$)).subscribe({
       next: ([createdLogs, columnLogs]) => {
         this.logsData = createdLogs.concat(columnLogs).sort((a, b) => a.createdAt! < b.createdAt! ? -1 : 1);
         this.initializeChart();

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -36,7 +36,7 @@ interface IItemBugReport {
     ItemPropertyIconComponent,
   ]
 })
-export class BugReportComponent implements OnInit {
+export class BugReportComponent implements OnInit, OnDestroy {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -54,6 +54,10 @@ export class BugReportComponent implements OnInit {
   constructor(
     private translate: TranslateService,
   ) { }
+
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+  }
 
   ngOnInit() {
     this.initializeChart();

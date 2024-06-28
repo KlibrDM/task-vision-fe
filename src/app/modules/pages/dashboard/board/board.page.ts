@@ -11,7 +11,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { IProject, ProjectRole } from 'src/app/models/project';
 import { IItem, IItemPayload, ItemType } from 'src/app/models/item';
 import { ItemService } from 'src/app/services/item.service';
-import { combineLatest } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ToastController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -48,6 +48,8 @@ import { DocsService } from 'src/app/services/docs.service';
   ]
 })
 export class BoardPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   project?: IProject;
   items?: IItem[];
@@ -82,42 +84,59 @@ export class BoardPage {
     addIcons({ chevronDownOutline, chevronUpOutline });
   }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     this.isMobile = window.innerWidth < 768;
     this.boardView = [];
 
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.getProjectDetails(project._id);
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            this.getProjectDetails(project._id);
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.getProjectDetails(project._id);
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.getProjectDetails(project._id);
+                });
+            }
           });
-        }
       });
-    });
 
-    this.socketService.serverMessage.subscribe((message) => {
+    this.socketService.serverMessage.pipe(takeUntil(this.destroyed$)).subscribe((message) => {
+      if (!this.project?.settings.enable_reactivity || !this.user?.settings.enable_reactivity) {
+        return;
+      }
+
       switch (message.event) {
         case WS_CLIENT_EVENTS.ITEM_CHANGED:
         case WS_CLIENT_EVENTS.ITEM_DELETED:
@@ -147,7 +166,7 @@ export class BoardPage {
       this.itemService.getItems(this.user!.access_token!, projectId),
       this.projectService.getProjectUsers(this.user!.access_token!, projectId),
       this.sprintService.getSprints(this.user!.access_token!, projectId)
-    ]).subscribe(([items, users, sprints]) => {
+    ]).pipe(takeUntil(this.destroyed$)).subscribe(([items, users, sprints]) => {
       this.items = items;
       this.epics = items.filter(e => e.type === ItemType.EPIC && !e.deleted);
       this.projectUsers = users;
@@ -264,7 +283,9 @@ export class BoardPage {
         for (let i = 0; i < payload.files.length; i++) {
           formData.append('files', payload.files[i], payload.files[i].name);
         }
-        this.docsService.uploadItemAttachments(this.user?.access_token || '', this.project!._id, item._id, formData).subscribe();
+        this.docsService.uploadItemAttachments(
+          this.user?.access_token || '', this.project!._id, item._id, formData
+        ).subscribe();
       }
     });
   }

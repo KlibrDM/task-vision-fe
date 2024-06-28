@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, combineLatest, takeUntil } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { IProject } from 'src/app/models/project';
@@ -53,36 +53,40 @@ export class NotificationsDrawerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).pipe(takeUntil(this.destroyed$)).subscribe(([user, id]) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.pipe(takeUntil(this.destroyed$)).subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.getNotificationsData(project._id);
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id)
-            .pipe(takeUntil(this.destroyed$))
-            .subscribe((project) => {
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
               this.project = project;
-              this.projectService.setCurrentProject(project, this.user?._id!);
               this.getNotificationsData(project._id);
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.getNotificationsData(project._id);
+                });
+            }
           });
-        }
       });
-    });
 
     this.socketService.serverMessage.pipe(takeUntil(this.destroyed$)).subscribe((message) => {
       if (message.event === WS_CLIENT_EVENTS.NEW_NOTIFICATION) {

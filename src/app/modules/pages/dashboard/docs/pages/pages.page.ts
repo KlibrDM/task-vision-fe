@@ -10,7 +10,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { CollabDocsService } from 'src/app/services/collabDocs.service';
 import { SocketService } from 'src/app/services/socket.service';
-import { Subject, combineLatest, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, combineLatest, debounceTime, distinctUntilChanged, first, takeUntil } from 'rxjs';
 import { IUser, IUserPartner } from 'src/app/models/user';
 import { IProject, ProjectRole } from 'src/app/models/project';
 import { Router } from '@angular/router';
@@ -34,6 +34,7 @@ import { Languages } from 'src/app/models/constants';
   ]
 })
 export class PagesPage {
+  destroyed$: Subject<boolean> = new Subject();
   @ViewChild('documentContent') documentContentTextArea: any;
   
   md = markdownit({
@@ -77,43 +78,56 @@ export class PagesPage {
     addIcons({ sparklesOutline });
   }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      // Get folder structure path from route
-      this.docId = decodeURI(this.location.path().substring(11));
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        // Get folder structure path from route
+        this.docId = decodeURI(this.location.path().substring(11));
 
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-      this.socketService.changeActiveCollabDoc(this.user!._id, this.docId!);
-
-      this.projectService.currentProject.subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.getData()
+        if (!user) {
+          this.router.navigate(['']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            this.getData();
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+        this.socketService.changeActiveCollabDoc(this.user!._id, this.docId!);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.getData()
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.getData();
+                });
+            }
           });
-        }
       });
-    });
 
-    this.socketService.serverMessage.subscribe((message) => {
+    this.socketService.serverMessage.pipe(takeUntil(this.destroyed$)).subscribe((message) => {
       switch (message.event) {
         case WS_CLIENT_EVENTS.ACTIVE_COLLAB_DOC_ACTIVE_USERS:
           this.onWebSocketActiveUsersChanged(message.payload as string[]);
@@ -129,9 +143,12 @@ export class PagesPage {
       }
     });
 
-    this.contentQueryChanged.pipe(debounceTime(300), distinctUntilChanged()).subscribe((content) => {
-      this.getContentMD(content);
-    });
+    this.contentQueryChanged
+      .pipe(takeUntil(this.destroyed$))
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((content) => {
+        this.getContentMD(content);
+      });
 
     this.docAILanguage = this.translate.currentLang;
   }

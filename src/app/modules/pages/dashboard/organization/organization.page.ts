@@ -17,7 +17,7 @@ import { GeneralHeaderComponent } from 'src/app/modules/components/general-heade
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { IProject } from 'src/app/models/project';
-import { combineLatest } from 'rxjs';
+import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 import { OrganizationService } from 'src/app/services/organization.service';
 import { IOrganization, OrganizationRole } from 'src/app/models/organization';
@@ -42,6 +42,8 @@ import { LogsControllerComponent } from 'src/app/modules/components/logs-control
   ]
 })
 export class OrganizationPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   organization?: IOrganization;
   organizationUsers?: IUserOrganizationPartner[];
@@ -71,29 +73,39 @@ export class OrganizationPage {
     addIcons({ trashOutline, closeOutline, addCircleOutline });
   }
 
-  ionViewWillEnter() {
-    this.authService.currentUser.subscribe((user) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
 
-      this.getData();
-    });
+  ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
+    this.authService.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((user) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
+        }
+        this.user = user;
+
+        this.getData();
+      });
   }
 
   getData() {
     combineLatest([
       this.organizationService.getOrganization(this.user!.access_token!),
       this.projectService.getProjects(this.user!.access_token!),
-    ]).subscribe(([organization, projects]) => {
+    ]).pipe(takeUntil(this.destroyed$)).subscribe(([organization, projects]) => {
       if (organization) {
         this.organization = organization;
         this.organizationService.getOrganizationUsers(this.user!.access_token!, this.organization!._id)
+          .pipe(takeUntil(this.destroyed$))
           .subscribe(users => {
             this.organizationUsers = users;
-        });
+          });
 
         this.currentUserRole = this.organization.users.find((user) => user.userId === this.user!._id)?.role;
       }

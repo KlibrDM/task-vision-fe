@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -61,7 +61,7 @@ interface IUserReport {
     ItemPropertyIconComponent,
   ]
 })
-export class HourTrackingComponent implements OnInit {
+export class HourTrackingComponent implements OnInit, OnDestroy {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -83,6 +83,10 @@ export class HourTrackingComponent implements OnInit {
   constructor(
     private logService: LogService,
   ) { }
+
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+  }
 
   async ngOnInit() {
     this.logsData = await firstValueFrom(this.logService.getFilteredLogs(

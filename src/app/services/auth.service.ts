@@ -4,6 +4,7 @@ import { IUser, IUserLoginPayload, IUserRegisterPayload } from '../models/user';
 import { environment } from "src/environments/environment";
 import { BehaviorSubject, Observable } from 'rxjs';
 import { StorageService } from './storage.service';
+import { ProjectService } from './project.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +20,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private storage: StorageService
+    private storage: StorageService,
+    private projectService: ProjectService,
   ) {
     this.storage.get('user').then((user) => {
       if (user) {
@@ -46,6 +48,7 @@ export class AuthService {
 
   logout(token: string) {
     this.currentUser.next(undefined);
+    this.projectService.unsetActiveProjectId();
     this.storage.remove('user');
     return this.http.post<void>(`${environment.api}${this.USER_LOGOUT_ENDPOINT}`, {}, {
       headers: {
@@ -56,12 +59,16 @@ export class AuthService {
 
   localLogout() {
     this.currentUser.next(undefined);
+    this.projectService.unsetActiveProjectId();
     this.storage.remove('user');
   }
 
   setCurrentUser(user: IUser) {
-    this.currentUser.next(user);
     this.storage.set('user', user);
+    if (user.active_projectId) {
+      this.storage.set('activeProjectId', user.active_projectId);
+    }
+    this.currentUser.next(user);
   }
 
   updateUser(token: string, payload: Partial<IUser>) {

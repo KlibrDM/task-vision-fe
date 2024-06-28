@@ -13,6 +13,7 @@ import { addCircleOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { IonModal } from '@ionic/angular';
 import { ProjectsCreateModalComponent } from './projects-create-modal/projects-create-modal.component';
+import { Subject, first, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-projects',
@@ -29,6 +30,8 @@ import { ProjectsCreateModalComponent } from './projects-create-modal/projects-c
   ]
 })
 export class ProjectsPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   projects?: IProject[];
 
@@ -43,18 +46,30 @@ export class ProjectsPage {
     addIcons({ addCircleOutline });
   }
 
-  ionViewWillEnter() {
-    this.authService.currentUser.subscribe((user) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
 
-      this.user = user;
-      this.projectService.getProjects(this.user.access_token!).subscribe((projects) => {
-        this.projects = projects;
+  ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
+    this.authService.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe((user) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
+        }
+
+        this.user = user;
+        this.projectService.getProjects(this.user.access_token!)
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((projects) => {
+            this.projects = projects;
+          });
       });
-    });
   }
 
   openCreateModal() {

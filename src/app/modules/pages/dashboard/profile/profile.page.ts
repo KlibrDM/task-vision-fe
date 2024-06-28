@@ -14,6 +14,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { ToastController } from '@ionic/angular/standalone';
 import { LogsControllerComponent } from 'src/app/modules/components/logs-controller/logs-controller.component';
 import { LogEntities } from 'src/app/models/log';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -32,6 +33,8 @@ import { LogEntities } from 'src/app/models/log';
   ]
 })
 export class ProfilePage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
 
   firstName = '';
@@ -63,24 +66,33 @@ export class ProfilePage {
     private toastController: ToastController,
   ) { }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
-    this.authService.currentUser.subscribe((user) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
+    this.destroyed$ = new Subject();
 
-      this.firstName = this.user!.first_name;
-      this.lastName = this.user!.last_name;
-      this.language = this.translate.currentLang;
+    this.authService.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((user) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
+        }
+        this.user = user;
 
-      this.enableReactivity = this.user!.settings?.enable_reactivity || false;
-      this.mentionNotifications = this.user!.settings?.mention_notifications || false;
-      this.assignmentNotifications = this.user!.settings?.assignment_notifications || false;
-      this.sprintNotifications = this.user!.settings?.sprint_notifications || false;
-      this.itemNotifications = this.user!.settings?.item_notifications || false;
-    });
+        this.firstName = this.user!.first_name;
+        this.lastName = this.user!.last_name;
+        this.language = this.translate.currentLang;
+
+        this.enableReactivity = this.user!.settings?.enable_reactivity || false;
+        this.mentionNotifications = this.user!.settings?.mention_notifications || false;
+        this.assignmentNotifications = this.user!.settings?.assignment_notifications || false;
+        this.sprintNotifications = this.user!.settings?.sprint_notifications || false;
+        this.itemNotifications = this.user!.settings?.item_notifications || false;
+      });
   }
 
   onGeneralSave() {

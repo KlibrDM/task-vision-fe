@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IUser, IUserLoginPayload } from 'src/app/models/user';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular/standalone';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,9 @@ import { ToastController } from '@ionic/angular/standalone';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, TranslateModule, ReactiveFormsModule]
 })
-export class LoginPage implements OnInit {
+export class LoginPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email, Validators.maxLength(120)]),
     password: new FormControl('', [Validators.required, Validators.minLength(5), Validators.maxLength(60)]),
@@ -28,14 +31,23 @@ export class LoginPage implements OnInit {
     private translate: TranslateService,
   ) { }
 
-  ngOnInit() {
-    this.auth.currentUser.subscribe((user) => {
-      if (user) {
-        this.router.navigate([
-          user.active_projectId ? '/app/board' : '/app/projects'
-        ]);
-      }
-    });
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
+  ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
+    this.auth.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((user) => {
+        if (user) {
+          this.router.navigate([
+            user.active_projectId ? '/app/board' : '/app/projects'
+          ]);
+        }
+      });
   }
 
   loginUser() {

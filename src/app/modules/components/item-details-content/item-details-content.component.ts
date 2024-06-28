@@ -24,7 +24,7 @@ import { ISprint } from 'src/app/models/sprint';
 import { ItemService } from 'src/app/services/item.service';
 import * as Constants from 'src/app/models/constants';
 import { RouterModule } from '@angular/router';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { LogsControllerComponent } from '../logs-controller/logs-controller.component';
 import { HourActivityComponent } from '../hour-activity/hour-activity.component';
 import { IUploadedDoc } from 'src/app/models/uploadedDocs';
@@ -54,6 +54,8 @@ import { environment } from 'src/environments/environment';
   ]
 })
 export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy {
+  destroyed$: Subject<boolean> = new Subject();
+
   @Output() itemChanged = new EventEmitter<IItem>();
   @Output() itemDeleted = new EventEmitter<void>();
   @Output() pageLeave = new EventEmitter<void>();
@@ -144,19 +146,22 @@ export class ItemDetailsContentComponent implements OnInit, OnChanges, OnDestroy
     this.items = structuredClone(this.items);
 
     if (this.allowEditClicked) {
-      this.allowEditClicked.subscribe(() => this.onAllowEditClick());
+      this.allowEditClicked.pipe(takeUntil(this.destroyed$)).subscribe(() => this.onAllowEditClick());
     }
     if (this.discardClicked) {
-      this.discardClicked.subscribe(() => this.onDiscardChangesClick());
+      this.discardClicked.pipe(takeUntil(this.destroyed$)).subscribe(() => this.onDiscardChangesClick());
     }
     if (this.saveClicked) {
-      this.saveClicked.subscribe(() => this.onSaveChangesClick());
+      this.saveClicked.pipe(takeUntil(this.destroyed$)).subscribe(() => this.onSaveChangesClick());
     }
 
     moment.locale(this.translate.currentLang);
   }
 
   ngOnDestroy() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+
     this.itemAttachments.forEach(doc => {
       if (doc.blobUrl) {
         window.URL.revokeObjectURL(doc.blobUrl);

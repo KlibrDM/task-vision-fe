@@ -29,7 +29,7 @@ import {
   eyeOutline
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-import { combineLatest } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { DocsService } from 'src/app/services/docs.service';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { FileTypePipe } from 'src/app/pipes/fileType.pipe';
@@ -78,6 +78,8 @@ import { PageAccessComponent } from './page-access/page-access.component';
   ]
 })
 export class DocsPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   project?: IProject;
   projectUsers?: IUserPartner[];
@@ -145,73 +147,92 @@ export class DocsPage {
     });
   }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      // Get folder structure path from route
-      const fullPath = decodeURI(this.location.path());
-      this.path = fullPath.substring(fullPath.indexOf('/app/docs/') + 10);
-      if (this.path.endsWith('$collab')) {
-        this.selectedSection = 'collab';
-        this.path = '/';
-      }
-      if (this.path.startsWith('$collab/')) {
-        this.selectedSection = 'collab';
-        this.path = this.path.substring(8);
-      }
-      this.createPathBreadcrumb();
-
-      if (!this.path?.length) {
-        this.path = '/';
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        // Get folder structure path from route
+        const fullPath = decodeURI(this.location.path());
+        this.path = fullPath.substring(fullPath.indexOf('/app/docs/') + 10);
+        if (this.path.endsWith('$collab')) {
+          this.selectedSection = 'collab';
+          this.path = '/';
+        }
+        if (this.path.startsWith('$collab/')) {
+          this.selectedSection = 'collab';
+          this.path = this.path.substring(8);
+        }
         this.createPathBreadcrumb();
-      }
 
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.projectService.getProjectUsers(this.user!.access_token!, this.project._id).subscribe((users) => {
-            this.projectUsers = users;
-          });
-          if (this.selectedSection === 'uploaded') {
-            this.getDocs(project._id);
-          }
-          else if (this.selectedSection === 'collab') {
-            this.getCollabDocs(project._id);
-          }
+        if (!this.path?.length) {
+          this.path = '/';
+          this.createPathBreadcrumb();
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.getProjectUsers(this.user!.access_token!, this.project._id).subscribe((users) => {
-              this.projectUsers = users;
-            });
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            if (this.selectedSection === 'uploaded') {
-              this.getDocs(project._id);
+
+        if (!user) {
+          this.router.navigate(['']);
+          return;
+        }
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.projectService.getProjectUsers(this.user!.access_token!, this.project._id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((users) => {
+                  this.projectUsers = users;
+                });
+
+              if (this.selectedSection === 'uploaded') {
+                this.getDocs(project._id);
+              }
+              else if (this.selectedSection === 'collab') {
+                this.getCollabDocs(project._id);
+              }
             }
-            else if (this.selectedSection === 'collab') {
-              this.getCollabDocs(project._id);
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.getProjectUsers(this.user!.access_token!, this.project._id)
+                    .pipe(takeUntil(this.destroyed$))
+                    .subscribe((users) => {
+                      this.projectUsers = users;
+                    });
+
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  if (this.selectedSection === 'uploaded') {
+                    this.getDocs(project._id);
+                  }
+                  else if (this.selectedSection === 'collab') {
+                    this.getCollabDocs(project._id);
+                  }
+                });
             }
           });
-        }
       });
-    });
 
-    this.socketService.serverMessage.subscribe((message) => {
+    this.socketService.serverMessage.pipe(takeUntil(this.destroyed$)).subscribe((message) => {
       switch (message.event) {
         case WS_CLIENT_EVENTS.DOCS_CREATED:
           this.onWebSocketDocsCreate(message.payload as IUploadedDoc[]);
@@ -241,15 +262,19 @@ export class DocsPage {
   }
 
   getDocs(projectId: string) {
-    this.docsService.getUploadedDocs(this.user?.access_token!, projectId, this.path!).subscribe((docs) => {
-      this.uploadedDocs = this.sortDocs(docs);
-    });
+    this.docsService.getUploadedDocs(this.user?.access_token!, projectId, this.path!)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((docs) => {
+        this.uploadedDocs = this.sortDocs(docs);
+      });
   }
 
   getCollabDocs(projectId: string) {
-    this.collabDocsService.getCollabDocs(this.user?.access_token!, projectId, this.path!).subscribe((docs) => {
-      this.collabDocs = this.sortCollabDocs(docs);
-    });
+    this.collabDocsService.getCollabDocs(this.user?.access_token!, projectId, this.path!)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((docs) => {
+        this.collabDocs = this.sortCollabDocs(docs);
+      });
   }
 
   sortDocs(docs: IUploadedDoc[]) {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -28,7 +28,7 @@ import { ItemPropertyIconComponent } from 'src/app/modules/components/item-prope
     ItemPropertyIconComponent,
   ]
 })
-export class ItemTypeReportComponent implements OnInit {
+export class ItemTypeReportComponent implements OnInit, OnDestroy {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -50,6 +50,10 @@ export class ItemTypeReportComponent implements OnInit {
   constructor(
     private translate: TranslateService,
   ) { }
+
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+  }
 
   ngOnInit() {
     this.initializeChart();

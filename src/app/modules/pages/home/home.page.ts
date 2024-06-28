@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -9,6 +9,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { IUser } from 'src/app/models/user';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline } from 'ionicons/icons';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +24,9 @@ import { checkmarkOutline } from 'ionicons/icons';
     HomeNavbarComponent
   ]
 })
-export class HomePage implements OnInit {
+export class HomePage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
 
   constructor(
@@ -33,10 +36,19 @@ export class HomePage implements OnInit {
     addIcons({ checkmarkOutline });
   }
 
-  ngOnInit() {
-    this.authService.currentUser.subscribe((user) => {
-      this.user = user;
-    });
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
+  ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
+    this.authService.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((user) => {
+        this.user = user;
+      });
   }
 
   goToRoute(route: string) {

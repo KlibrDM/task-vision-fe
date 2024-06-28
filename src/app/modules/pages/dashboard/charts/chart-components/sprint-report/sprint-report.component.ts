@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -32,7 +32,7 @@ import { ItemPropertyIconComponent } from 'src/app/modules/components/item-prope
     ItemPropertyIconComponent,
   ]
 })
-export class SprintReportComponent implements OnInit {
+export class SprintReportComponent implements OnInit, OnDestroy {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -60,6 +60,10 @@ export class SprintReportComponent implements OnInit {
     private translate: TranslateService,
     private chartDataService: ChartDataService,
   ) { }
+
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+  }
 
   ngOnInit(): void {
     const activeSprintId = this.project?.currentSprintId;

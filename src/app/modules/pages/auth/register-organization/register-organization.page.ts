@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular/standalone';
 import { IUser, IUserRegisterPayload } from 'src/app/models/user';
 import { OrganizationService } from 'src/app/services/organization.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-register-organization',
@@ -17,6 +18,8 @@ import { OrganizationService } from 'src/app/services/organization.service';
   imports: [IonicModule, CommonModule, FormsModule, TranslateModule, ReactiveFormsModule]
 })
 export class RegisterOrganizationPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   registerForm = new FormGroup({
     orgName: new FormControl('', [Validators.required, Validators.maxLength(120)]),
     firstName: new FormControl('', [Validators.required, Validators.maxLength(60)]),
@@ -33,14 +36,23 @@ export class RegisterOrganizationPage {
     private translate: TranslateService,
   ) { }
 
-  ngOnInit() {
-    this.auth.currentUser.subscribe((user) => {
-      if (user) {
-        this.router.navigate([
-          user.active_projectId ? '/app/board' : '/app/projects'
-        ]);
-      }
-    });
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
+  ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
+    this.auth.currentUser
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe((user) => {
+        if (user) {
+          this.router.navigate([
+            user.active_projectId ? '/app/board' : '/app/projects'
+          ]);
+        }
+      });
   }
 
   registerOrganization() {

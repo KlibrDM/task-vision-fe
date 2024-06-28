@@ -21,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToastController } from '@ionic/angular/standalone';
 import moment from 'moment';
 import { IProject } from 'src/app/models/project';
-import { combineLatest } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 
 @Component({
@@ -40,6 +40,8 @@ import { ProjectService } from 'src/app/services/project.service';
   ]
 })
 export class ProjectSettingsPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   project?: IProject;
 
@@ -81,37 +83,50 @@ export class ProjectSettingsPage {
     });
   }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.setFormFields();
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            this.setFormFields()
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.setFormFields();
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.setFormFields()
+                });
+            }
           });
-        }
       });
-    });
   }
 
   setFormFields() {

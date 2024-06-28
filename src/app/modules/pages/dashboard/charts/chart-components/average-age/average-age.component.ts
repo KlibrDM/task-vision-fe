@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -38,7 +38,7 @@ interface IItemReport {
     ItemPropertyIconComponent,
   ]
 })
-export class AverageAgeComponent implements OnInit {
+export class AverageAgeComponent implements OnInit, OnDestroy {
   @Input() user?: IUser;
   @Input() project?: IProject;
   @Input() items?: IItem[];
@@ -56,6 +56,10 @@ export class AverageAgeComponent implements OnInit {
   constructor(
     private translate: TranslateService,
   ) { }
+
+  ngOnDestroy() {
+    if (this.chart) this.chart.destroy();
+  }
 
   ngOnInit() {
     this.initializeChart();

@@ -11,7 +11,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { IProject } from 'src/app/models/project';
 import { IItem } from 'src/app/models/item';
 import { ItemService } from 'src/app/services/item.service';
-import { combineLatest } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { ItemCreateModalComponent } from 'src/app/modules/components/item-create-modal/item-create-modal.component';
 import { ISprint, ISprintPayload, SprintType } from 'src/app/models/sprint';
 import { SprintService } from 'src/app/services/sprint.service';
@@ -71,6 +71,8 @@ interface SprintView {
   ]
 })
 export class SprintPlannerPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   user?: IUser;
   project?: IProject;
   items?: IItem[];
@@ -92,37 +94,50 @@ export class SprintPlannerPage {
     addIcons({ warningOutline });
   }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.getProjectDetails(project._id);
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            this.getProjectDetails(project._id);
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.getProjectDetails(project._id);
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.getProjectDetails(project._id);
+                });
+            }
           });
-        }
       });
-    });
   }
 
   getProjectDetails(projectId: string) {
@@ -130,7 +145,7 @@ export class SprintPlannerPage {
       this.itemService.getItems(this.user!.access_token!, projectId),
       this.projectService.getProjectUsers(this.user!.access_token!, projectId),
       this.sprintService.getSprints(this.user!.access_token!, projectId)
-    ]).subscribe(([items, users, sprints]) => {
+    ]).pipe(takeUntil(this.destroyed$)).subscribe(([items, users, sprints]) => {
       this.items = items;
       this.projectUsers = users;
       this.sprints = sprints;

@@ -29,7 +29,13 @@ export class ProjectService {
     private storage: StorageService,
     private socketSerive: SocketService,
     private notificationService: NotificationService,
-  ) { }
+  ) {
+    this.getActiveProjectId().subscribe((id) => {
+      if (id) {
+        this.activeProjectId.next(id);
+      }
+    });
+  }
 
   getProjects(token: string): Observable<IProject[]> {
     return this.http.get<IProject[]>(`${environment.api}${this.GET_PROJECTS_ENDPOINT}`, {
@@ -105,6 +111,12 @@ export class ProjectService {
 
     // Get unread notifications count for the new active project
     this.notificationService.updateUnreadCountOnProjectChange(token, id);
+  }
+
+  unsetActiveProjectId() {
+    this.activeProjectId.next(undefined);
+    this.storage.remove('activeProjectId');
+    this.currentProject.next(undefined);
   }
 
   setCurrentProject(project: IProject, userId: string) {

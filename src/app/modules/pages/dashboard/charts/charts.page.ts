@@ -10,7 +10,7 @@ import { IUser, IUserPartner } from 'src/app/models/user';
 import { GeneralHeaderComponent } from 'src/app/modules/components/general-header/general-header.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IProject } from 'src/app/models/project';
-import { combineLatest, first } from 'rxjs';
+import { Subject, combineLatest, first, takeUntil } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 import { IItem, ItemType } from 'src/app/models/item';
 import { ISprint } from 'src/app/models/sprint';
@@ -127,6 +127,8 @@ const ChartList: IChartListItem[] = [
   ]
 })
 export class ChartsPage {
+  destroyed$: Subject<boolean> = new Subject();
+
   chartList = ChartList;
   @ViewChild('chartComponent', {read: ViewContainerRef}) viewRef?: ViewContainerRef;
 
@@ -149,37 +151,51 @@ export class ChartsPage {
     private sprintService: SprintService,
   ) { }
 
+  ionViewDidLeave() {
+    this.destroyed$.next(true);
+    this.destroyed$.unsubscribe();
+  }
+
   ionViewWillEnter() {
+    this.destroyed$ = new Subject();
+
     combineLatest([
       this.authService.currentUser,
-      this.projectService.getActiveProjectId()
-    ]).subscribe(([user, id]) => {
-      if (!user) {
-        this.router.navigate(['']);
-        return;
-      }
-      this.user = user;
-
-      if (!id) {
-        this.router.navigate(['app/projects']);
-        return;
-      }
-      this.projectService.setActiveProjectId(this.user!.access_token!, id);
-
-      this.projectService.currentProject.pipe(first()).subscribe((project) => {
-        if (project) {
-          this.project = project;
-          this.getProjectDetails(project._id);
+      this.projectService.activeProjectId
+    ]).pipe(takeUntil(this.destroyed$))
+      .pipe(first())
+      .subscribe(([user, id]) => {
+        if (!user) {
+          this.router.navigate(['']);
+          return;
         }
-        else {
-          this.projectService.getProject(this.user!.access_token!, id).subscribe((project) => {
-            this.project = project;
-            this.projectService.setCurrentProject(project, this.user?._id!);
-            this.getProjectDetails(project._id);
+        this.user = user;
+
+        if (!id) {
+          this.router.navigate(['app/projects']);
+          return;
+        }
+        this.projectService.setActiveProjectId(this.user!.access_token!, id);
+
+        this.projectService.currentProject
+          .pipe(takeUntil(this.destroyed$))
+          .pipe(first())
+          .subscribe((project) => {
+            if (project) {
+              this.project = project;
+              this.getProjectDetails(project._id);
+            }
+            else {
+              this.projectService.getProject(this.user!.access_token!, id)
+                .pipe(takeUntil(this.destroyed$))
+                .subscribe((project) => {
+                  this.project = project;
+                  this.projectService.setCurrentProject(project, this.user?._id!);
+                  this.getProjectDetails(project._id);
+                });
+            }
           });
-        }
       });
-    });
   }
 
   getProjectDetails(projectId: string) {
@@ -187,7 +203,7 @@ export class ChartsPage {
       this.itemService.getItems(this.user!.access_token!, projectId),
       this.projectService.getProjectUsers(this.user!.access_token!, projectId),
       this.sprintService.getSprints(this.user!.access_token!, projectId)
-    ]).subscribe(([items, users, sprints]) => {
+    ]).pipe(takeUntil(this.destroyed$)).subscribe(([items, users, sprints]) => {
       this.items = items;
       this.epics = items.filter(e => e.type === ItemType.EPIC && !e.deleted);
       this.projectUsers = users;
