@@ -12,7 +12,7 @@ ion-content {
 .board-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .user {
@@ -64,6 +64,8 @@ ion-content {
 .columns {
   display: flex;
   gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .column {
@@ -74,6 +76,7 @@ ion-content {
   display: flex;
   flex-direction: column;
   min-height: 192px;
+  min-width: 180px;
 }
 
 .column-header {
